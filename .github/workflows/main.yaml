@@ -9,11 +9,6 @@ jobs:
   deploy-to-dev:
     runs-on: self-hosted
     steps:
-      # Step 0: Set Execution Policy
-      - name: Set Execution Policy
-        shell: powershell
-        run: Set-ExecutionPolicy Bypass -Scope Process
-    
       # Step 1: Install Chocolatey if not already installed
       - name: Install Chocolatey
         shell: powershell
