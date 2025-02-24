@@ -11,7 +11,7 @@ jobs:
     steps:
       # Step 1: Install Chocolatey if not already installed
       - name: Install Chocolatey
-        shell: pwsh
+        shell: powershell
         run: |
           if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
               Write-Output "Installing Chocolatey..."
@@ -23,7 +23,7 @@ jobs:
 
       # Step 2: Install Databricks CLI using Chocolatey
       - name: Install Databricks CLI
-        shell: pwsh
+        shell: powershell
         run: |
           Write-Output "Installing Databricks CLI using Chocolatey..."
           choco install databricks-cli -y
