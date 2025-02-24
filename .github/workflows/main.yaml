@@ -6,15 +6,7 @@ on:
       - main
 
 jobs:
-  pre-deployment-approval:
-    runs-on: self-hosted
-    environment: pre-deployment-approval
-    steps:
-      - name: Request Pre-Deployment Approval
-        run: echo "Pre-deployment approval requested. Waiting for approver to approve."
-
   deploy-to-dev:
-    needs: pre-deployment-approval
     runs-on: self-hosted
     steps:
       # Step 1: Check if Databricks CLI is installed
@@ -69,13 +61,5 @@ jobs:
           cd Databricks_Notebooks
           databricks sync Notebooks /Workspace/Shared/
           echo "Notebooks deployed to Dev Databricks Workspace."
-
-  post-deployment-approval:
-    needs: deploy-to-dev
-    runs-on: self-hosted
-    environment: post-deployment-approval
-    steps:
-      - name: Request Post-Deployment Approval
-        run: echo "Post-deployment approval requested. Waiting for QA approver to approve."
 
   
