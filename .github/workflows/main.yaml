@@ -9,60 +9,49 @@ jobs:
   deploy-to-dev:
     runs-on: self-hosted
     steps:
-      # Step 1: Check if Databricks CLI is installed
-      - name: Check if Databricks CLI is installed
-        id: check-databricks-cli
+      # Step 1: Install Chocolatey if not already installed
+      - name: Install Chocolatey
         shell: pwsh
         run: |
-          if (-not (Get-Command databricks -ErrorAction SilentlyContinue)) {
-            Write-Output "Databricks CLI not found. Installing Databricks CLI..."
-            echo "cli_installed=false" | Out-File -FilePath $env:GITHUB_ENV -Append
-          } else {
-            Write-Output "Databricks CLI is already installed."
-            echo "cli_installed=true" | Out-File -FilePath $env:GITHUB_ENV -Append
+          if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+              Write-Output "Installing Chocolatey..."
+              Set-ExecutionPolicy Bypass -Scope Process -Force; `
+              [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+              iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
           }
+          choco --version
 
-      # Step 2: Install Databricks CLI if not installed
+      # Step 2: Install Databricks CLI using Chocolatey
       - name: Install Databricks CLI
-        if: env.cli_installed == 'false'
         shell: pwsh
         run: |
-          Write-Output "Installing Databricks CLI..."
-          pip install databricks-cli
+          Write-Output "Installing Databricks CLI using Chocolatey..."
+          choco install databricks-cli -y
           databricks --version
-          Write-Output "Databricks CLI has been installed successfully."
 
-      # Step 3: Authenticate Dev Databricks Workspace
-      - name: Authenticate Dev Databricks Workspace
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path ~/.databricks -Force
-          @"
-          [DEFAULT]
-          host = "${{ vars.QA_DATABRICKS_HOST }}"
-          token = "${{ secrets.QA_DATABRICKS_TOKEN }}"
-          "@ | Out-File -FilePath ~/.databrickscfg -Encoding UTF8
-          # No equivalent of chmod on Windows, but file permissions are managed differently.
-          databricks auth profiles
-
-      # Step 4: Download Files from Remote Repository
+      # Step 3: Download Files from Remote Repository
       - name: Download Files from Remote Repository
         shell: pwsh
         run: |
-          if (Test-Path -Path "Databricks_Notebooks") {
+          if (Test-Path -Path "AVA-DATABRICKS-QMC-POC") {
             Write-Output "Folder exists. Pulling latest changes..."
-            Set-Location Databricks_Notebooks
+            Set-Location AVA-DATABRICKS-QMC-POC
             git pull origin main
             Set-Location ..
           } else {
             Write-Output "Folder does not exist. Cloning the repository..."
-            git clone --branch main "${{ vars.repo_url }}" Databricks_Notebooks
+            git clone --branch main "${{ vars.repo_url }}" AVA-DATABRICKS-QMC-POC
           }
 
-      # Step 5: Synchronize Local Folder with Dev Databricks Workspace
-      - name: Synchronize Local Folder with Dev Databricks Workspace
-        shell: pwsh
+      # Step 4: Configure QA Databricks Authentication and Import Workspace
+      - name: Prod - OBM
+        shell: cmd
         run: |
-          Set-Location Databricks_Notebooks
-          databricks sync Notebooks /Workspace/Shared/
-          Write-Output "Notebooks deployed to Dev Databricks Workspace."
+          set TEMP_DIR=%USERPROFILE%\.databricks_temp
+          mkdir %TEMP_DIR%
+          echo [prod] > %TEMP_DIR%\.databrickscfg
+          echo host = "${{ vars.QA_DATABRICKS_HOST }}" >> %TEMP_DIR%\.databrickscfg
+          echo token = "${{ secrets.QA_DATABRICKS_TOKEN }}" >> %TEMP_DIR%\.databrickscfg
+          set DATABRICKS_CONFIG_FILE=%TEMP_DIR%\.databrickscfg
+          databricks auth profiles
+          databricks workspace import-dir --overwrite . "${{ vars.QA_WORKSPACE_PATH }}" -p QA
