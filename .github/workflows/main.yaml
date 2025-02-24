@@ -12,54 +12,57 @@ jobs:
       # Step 1: Check if Databricks CLI is installed
       - name: Check if Databricks CLI is installed
         id: check-databricks-cli
+        shell: pwsh
         run: |
-          if ! command -v databricks &> /dev/null; then
-            echo "Databricks CLI not found. Installing Databricks CLI..."
-            echo "cli_installed=false" >> $GITHUB_ENV
-          else
-            echo "Databricks CLI is already installed."
-            echo "cli_installed=true" >> $GITHUB_ENV
-          fi
+          if (-not (Get-Command databricks -ErrorAction SilentlyContinue)) {
+            Write-Output "Databricks CLI not found. Installing Databricks CLI..."
+            echo "cli_installed=false" | Out-File -FilePath $env:GITHUB_ENV -Append
+          } else {
+            Write-Output "Databricks CLI is already installed."
+            echo "cli_installed=true" | Out-File -FilePath $env:GITHUB_ENV -Append
+          }
 
       # Step 2: Install Databricks CLI if not installed
       - name: Install Databricks CLI
         if: env.cli_installed == 'false'
+        shell: pwsh
         run: |
-          echo "Installing Databricks CLI..."
+          Write-Output "Installing Databricks CLI..."
           pip install databricks-cli
           databricks --version
-          echo "Databricks CLI has been installed successfully."
+          Write-Output "Databricks CLI has been installed successfully."
 
       # Step 3: Authenticate Dev Databricks Workspace
       - name: Authenticate Dev Databricks Workspace
+        shell: pwsh
         run: |
-          mkdir -p ~/.databricks
-          cat <<EOF > ~/.databrickscfg
+          New-Item -ItemType Directory -Path ~/.databricks -Force
+          @"
           [DEFAULT]
           host = "${{ vars.QA_DATABRICKS_HOST }}"
           token = "${{ secrets.QA_DATABRICKS_TOKEN }}"
-          EOF
-          chmod 600 ~/.databrickscfg
+          "@ | Out-File -FilePath ~/.databrickscfg -Encoding UTF8
+          # No equivalent of chmod on Windows, but file permissions are managed differently.
           databricks auth profiles
 
       # Step 4: Download Files from Remote Repository
       - name: Download Files from Remote Repository
+        shell: pwsh
         run: |
-          if [ -d "Databricks_Notebooks" ]; then
-            echo "Folder exists. Pulling latest changes..."
-            cd Databricks_Notebooks
+          if (Test-Path -Path "Databricks_Notebooks") {
+            Write-Output "Folder exists. Pulling latest changes..."
+            Set-Location Databricks_Notebooks
             git pull origin main
-            cd ..
-          else
-            echo "Folder does not exist. Cloning the repository..."
+            Set-Location ..
+          } else {
+            Write-Output "Folder does not exist. Cloning the repository..."
             git clone --branch main "${{ vars.repo_url }}" Databricks_Notebooks
-          fi
+          }
 
       # Step 5: Synchronize Local Folder with Dev Databricks Workspace
       - name: Synchronize Local Folder with Dev Databricks Workspace
+        shell: pwsh
         run: |
-          cd Databricks_Notebooks
+          Set-Location Databricks_Notebooks
           databricks sync Notebooks /Workspace/Shared/
-          echo "Notebooks deployed to Dev Databricks Workspace."
-
-  
+          Write-Output "Notebooks deployed to Dev Databricks Workspace."
