@@ -38,7 +38,7 @@ jobs:
           if (Test-Path "AVA-DATABRICKS-QMC-POC") {
             Write-Host "Folder exists. Pulling latest changes..."
             Set-Location AVA-DATABRICKS-QMC-POC
-            git pull origin Dev
+            git pull origin main
             Set-Location ..
           } else {
             Write-Host "Folder does not exist. Cloning the repository..."
