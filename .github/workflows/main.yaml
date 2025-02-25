@@ -35,18 +35,24 @@ jobs:
       # Step 3: Download Files from Remote Repository to Local Workspace
       - name: Download the Files from Remote repo to Local workspace
         run: |
-          if (Test-Path "AVA-DATABRICKS-QMC-POC") {
+          if (Test-Path "QA") {
             Write-Host "Folder exists. Pulling latest changes..."
+            Set-Location QA
             Set-Location AVA-DATABRICKS-QMC-POC
             git pull origin main
             Set-Location ..
+            Set-Location ..
           } else {
-            Write-Host "Folder does not exist. Cloning the repository..."
-            git clone --branch main "${{ vars.REPO_PAT }}"
+            Write-Host "Folder does not exist. Creating 'QA' folder and cloning the repository..."
+            New-Item -ItemType Directory -Path "QA"  # Create the 'QA' folder
+            Set-Location QA
+            git clone --branch main "${{ vars.REPO_PAT }}" AVA-DATABRICKS-QMC-POC  # Clone into the 'AVA-DATABRICKS-QMC-POC' subfolder
+            Set-Location ..
           }
 
       # Step 4: Synchronize Local Folder with Databricks
       - name: Synchronize Local folder with databricks
         run: |
+          cd QA
           cd AVA-DATABRICKS-QMC-POC
           databricks sync Notebooks /Workspace/Shared
