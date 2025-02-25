@@ -73,17 +73,3 @@ jobs:
       - name: Request Post-Deployment Approval
         id: post-deployment-approval-step
         run: echo "Post-deployment approval requested. Waiting for QA approver to approve."
-
-      # Detect if approval was rejected
-      - name: Check Approval Status
-        if: ${{ failure() }}
-        run: |
-          echo "Post-deployment approval was rejected. Initiating rollback process..."
-
-      # Rollback to the previous commit
-      - name: Rollback to Previous Commit
-        if: ${{ failure() }}
-        run: |
-          echo "Reverting to the previous commit..."
-          git reset --hard HEAD~1
-          echo "Rollback completed successfully."
