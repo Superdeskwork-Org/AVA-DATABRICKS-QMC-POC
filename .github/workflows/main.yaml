@@ -6,9 +6,17 @@ on:
       - main
 
 jobs:
-  deploy-Dev:
-    if: github.ref == 'refs/heads/main'
+  pre-deployment-approval:
     runs-on: self-hosted
+    environment: pre-deployment-approval
+    steps:
+      - name: Request Pre-Deployment Approval
+        run: echo "Pre-deployment approval requested. Waiting for approver to approve."
+
+  deploy-to-dev:
+    needs: pre-deployment-approval
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main'
     steps:
       # Step 1: Check if Databricks CLI is installed
       - name: Check if Databricks CLI is installed
@@ -56,3 +64,11 @@ jobs:
           cd QA
           cd AVA-DATABRICKS-QMC-POC
           databricks sync Notebooks /Workspace/Shared
+
+  post-deployment-approval:
+    needs: deploy-to-dev
+    runs-on: self-hosted
+    environment: post-deployment-approval
+    steps:
+      - name: Request Post-Deployment Approval
+        run: echo "Post-deployment approval requested. Waiting for QA approver to approve."
