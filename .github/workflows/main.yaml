@@ -42,7 +42,7 @@ jobs:
             Set-Location ..
           } else {
             Write-Host "Folder does not exist. Cloning the repository..."
-            git clone --branch main "${{ vars.REPO_URL }}"
+            git clone --branch main "${{ vars.REPO_PAT }}"
           }
 
       # Step 4: Synchronize Local Folder with Databricks
