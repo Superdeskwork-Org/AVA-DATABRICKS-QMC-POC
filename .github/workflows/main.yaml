@@ -49,4 +49,4 @@ jobs:
       - name: Synchronize Local folder with databricks
         run: |
           cd AVA-DATABRICKS-QMC-POC
-          databricks sync Notebooks /Workspace/Shared/
+          databricks sync Notebooks /Workspace/Shared
