@@ -73,6 +73,23 @@ jobs:
           cd AVA-DATABRICKS-QMC-POC
           databricks sync Notebooks /Workspace/Shared
 
+  rollback-changes:
+  needs: post-deployment-approval
+  if: needs.post-deployment-approval.outputs.approval-failed == 'true'
+  runs-on: self-hosted
+      steps:
+      - name: Revert Changes to Previous State
+        run: |
+          Write-Host "Rolling back changes to the previous state..."
+          if (Test-Path "./backup_shared") {
+            Write-Host "Restoring from backup..."
+            databricks workspace import_dir ./backup_shared /Workspace/Shared --overwrite
+            Write-Host "Rollback completed successfully."
+          } else {
+            Write-Host "No backup found. Unable to rollback changes."
+            exit 1
+          }
+
   post-deployment-approval:
     needs: deploy-to-dev
     runs-on: self-hosted
