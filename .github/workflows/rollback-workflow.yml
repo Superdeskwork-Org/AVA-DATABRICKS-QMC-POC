@@ -1,0 +1,20 @@
+name: Rollback Changes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rollback-changes:
+    runs-on: self-hosted
+    steps:
+      - name: Revert Changes to Previous State
+        run: |
+          Write-Host "Rolling back changes to the previous state..."
+          if (Test-Path "./backup_shared") {
+            Write-Host "Restoring from backup..."
+            databricks workspace import_dir ./backup_shared /Workspace/Shared --overwrite
+            Write-Host "Rollback completed successfully."
+          } else {
+            Write-Host "No backup found. Unable to rollback changes."
+            exit 1
+          }
