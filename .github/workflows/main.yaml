@@ -77,14 +77,20 @@ jobs:
     needs: deploy-to-dev
     runs-on: self-hosted
     environment: post-deployment-approval
+    outputs:
+      approval-failed: ${{ steps.post-deployment-approval-step.outputs.approval-failed }}
     steps:
       - name: Request Post-Deployment Approval
         id: post-deployment-approval-step
-        run: echo "Post-deployment approval requested. Waiting for QA approver to approve."
+        run: |
+          # Simulate approval rejection
+          echo "Post-deployment approval requested. Waiting for QA approver to approve."
+          echo "Approval rejected."
+          echo "approval-failed=true" >> $GITHUB_OUTPUT
 
   rollback-changes:
     needs: post-deployment-approval
-    if: failure() || (steps.post-deployment-approval-step.outcome == 'failure')
+    if: needs.post-deployment-approval.outputs.approval-failed == 'true'
     runs-on: self-hosted
     steps:
       - name: Revert Changes to Previous State
