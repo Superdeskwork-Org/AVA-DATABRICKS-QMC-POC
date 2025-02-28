@@ -86,7 +86,7 @@ jobs:
           # Simulate approval rejection
           echo "Post-deployment approval requested. Waiting for QA approver to approve."
           echo "Approval rejected."
-          echo "approval-failed=true" >> $GITHUB_OUTPUT
+          echo "approval-failed='true'" >> $GITHUB_OUTPUT
 
   rollback-changes:
     needs: post-deployment-approval
