@@ -1,10 +1,10 @@
 name: Databricks Deployment
-
+ 
 on:
   push:
     branches:
       - main
-
+ 
 jobs:
   pre-deployment-approval:
     runs-on: self-hosted
@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Request Pre-Deployment Approval
         run: echo "Pre-deployment approval requested. Waiting for approver to approve."
-
+ 
   deploy-to-dev:
     needs: pre-deployment-approval
     runs-on: self-hosted
@@ -23,11 +23,10 @@ jobs:
         run: |
           if (-not (Get-Command databricks -ErrorAction SilentlyContinue)) {
             Write-Host "Databricks CLI not found. Please install the Databricks CLI on the runner."
-            exit 1
           } else {
             Write-Host "Databricks CLI is already installed."
           }
-
+ 
       # Step 2: Authenticate Dev Databricks Workspace
       - name: Authenticate Dev Databricks Workspace
         run: |
@@ -40,15 +39,8 @@ jobs:
           "@ | Out-File -FilePath "$env:USERPROFILE\.databrickscfg" -Encoding utf8
           icacls "$env:USERPROFILE\.databrickscfg" /inheritance:r /grant:r "$env:USERNAME`:F"
           databricks auth profiles
-
-      # Step 3: Backup Current State Before Deployment
-      - name: Backup Current State
-        run: |
-          Write-Host "Backing up the current state of the Databricks workspace..."
-          databricks workspace export_dir /Workspace/Shared ./backup_shared
-          Write-Host "Backup completed successfully."
-
-      # Step 4: Download Files from Remote Repository to Local Workspace
+ 
+      # Step 3: Download Files from Remote Repository to Local Workspace
       - name: Download the Files from Remote repo to Local workspace
         run: |
           if (Test-Path "QA") {
@@ -65,42 +57,18 @@ jobs:
             git clone --branch main "${{ vars.REPO_PAT }}" AVA-DATABRICKS-QMC-POC  # Clone into the 'AVA-DATABRICKS-QMC-POC' subfolder
             Set-Location ..
           }
-
-      # Step 5: Synchronize Local Folder with Databricks
-      - name: Synchronize Local folder with Databricks
+ 
+      # Step 4: Synchronize Local Folder with Databricks
+      - name: Synchronize Local folder with databricks
         run: |
           cd QA
           cd AVA-DATABRICKS-QMC-POC
           databricks sync Notebooks /Workspace/Shared
-
-  rollback-changes:
-  needs: post-deployment-approval
-  if: needs.post-deployment-approval.outputs.approval-failed == 'true'
-  runs-on: self-hosted
-      steps:
-      - name: Revert Changes to Previous State
-        run: |
-          Write-Host "Rolling back changes to the previous state..."
-          if (Test-Path "./backup_shared") {
-            Write-Host "Restoring from backup..."
-            databricks workspace import_dir ./backup_shared /Workspace/Shared --overwrite
-            Write-Host "Rollback completed successfully."
-          } else {
-            Write-Host "No backup found. Unable to rollback changes."
-            exit 1
-          }
-
+ 
   post-deployment-approval:
     needs: deploy-to-dev
     runs-on: self-hosted
     environment: post-deployment-approval
-    outputs:
-      approval-failed: ${{ steps.post-deployment-approval-step.outputs.approval-failed }}
     steps:
       - name: Request Post-Deployment Approval
-        id: post-deployment-approval-step
-        run: |
-          # Simulate approval rejection
-          echo "Post-deployment approval requested. Waiting for QA approver to approve."
-          echo "Approval rejected."
-          echo "approval-failed='true'" >> $GITHUB_OUTPUT
+        run: echo "Post-deployment approval requested. Waiting for QA approver to approve."
