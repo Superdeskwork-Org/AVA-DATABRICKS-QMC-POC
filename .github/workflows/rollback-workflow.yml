@@ -2,15 +2,7 @@ name: Post-Deployment Approval and Rollback
 
 on:
   workflow_dispatch:
-    inputs:
-      action:
-        description: "Choose action"
-        required: true
-        type: choice
-        options:
-          - Approve
-          - Reject
-
+  
 jobs:
   post-deployment-approval:
     runs-on: self-hosted
