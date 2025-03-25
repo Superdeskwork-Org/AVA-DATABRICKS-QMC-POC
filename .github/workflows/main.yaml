@@ -70,5 +70,39 @@ jobs:
     runs-on: self-hosted
     environment: post-deployment-approval
     steps:
-      - name: Request Post-Deployment Approval
-        run: echo "Post-deployment approval requested. Waiting for QA approver to approve."
+      # Step 1: Simulate Manual Approval with Inputs
+      - name: Simulate Post-Deployment Approval
+        id: post-deployment-approval
+        run: |
+          echo "Post-deployment approval requested. Waiting for QA approver to approve."
+          echo "Choose an action: Approve or Reject"
+          # Simulate user input (Replace with actual manual approval mechanism)
+          APPROVAL_ACTION="Reject"  # Replace with dynamic input (e.g., from workflow_dispatch)
+          echo "Selected action: $APPROVAL_ACTION"
+          echo "action=$APPROVAL_ACTION" >> $GITHUB_ENV
+
+      # Step 2: Revert to Previous Commit if Rejected
+      - name: Revert to Previous Commit
+        if: env.action == 'Reject'
+        run: |
+          echo "Reverting deployment to previous commit..."
+          git fetch --depth=100  # Fetch more commits to access the previous commit
+          PREVIOUS_COMMIT_ID=$(git rev-parse HEAD^)  # Get the previous commit ID
+          echo "Previous commit ID: $PREVIOUS_COMMIT_ID"
+          git checkout $PREVIOUS_COMMIT_ID  # Checkout the previous commit
+
+      # Step 3: Redeploy Application
+      - name: Redeploy Application
+        if: env.action == 'Reject'
+        run: |
+          echo "Redeploying application from commit: ${{ env.PREVIOUS_COMMIT_ID }}"
+          cd QA
+          cd AVA-DATABRICKS-QMC-POC
+          databricks sync Notebooks /Workspace/Shared
+          echo "Deployment reverted successfully."
+
+      # Step 4: Confirm Approval
+      - name: Confirm Approval
+        if: env.action == 'Approve'
+        run: |
+          echo "Deployment approved. No further action required."
