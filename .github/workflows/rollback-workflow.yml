@@ -12,32 +12,48 @@ on:
           - Reject
 
 jobs:
-  Roll-back-setup:
+ rollback-steps:
     runs-on: self-hosted
- 
-
+  
     steps:
-      # Step 1: Conert the input to variable
+      # Step 1: Simulate Manual Approval with Inputs
       - name: Simulate Post-Deployment Approval
         id: post-deployment-approval
         run: |
           echo "Post-deployment approval requested. Waiting for QA approver to approve."
           echo "Selected action: ${{ github.event.inputs.action }}"
-          echo "action=${{ github.event.inputs.action }}" >> $GITHUB_ENV
+          ACTION=$(echo "${{ github.event.inputs.action }}" | tr '[:upper:]' '[:lower:]')  # Normalize to lowercase
+          echo "action=$ACTION" >> $GITHUB_ENV
 
-      # Step 2: Revert to Previous Commit if Rejected
+      # Debug Action Variable
+      - name: Debug Action Variable
+        run: |
+          echo "Action variable value: ${{ env.action }}"
+
+      # Step 2: Check Out Repository
+      - name: Check Out Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all commits to access the previous commit ID
+
+      # Debug Commit History
+      - name: Debug Commit History
+        run: |
+          echo "Current commit: $(git rev-parse HEAD)"
+          echo "Previous commit: $(git rev-parse HEAD^)"
+
+      # Step 3: Revert to Previous Commit if Rejected
       - name: Revert to Previous Commit
-        if: env.action == 'Reject'
+        if: env.action == 'reject'
         run: |
           echo "Reverting deployment to previous commit..."
-          PREVIOUS_COMMIT_ID=$(git rev-parse HEAD^)  # Get the previous commit ID
+          PREVIOUS_COMMIT_ID=$(git rev-parse HEAD^)
           echo "Previous commit ID: $PREVIOUS_COMMIT_ID"
-          git checkout $PREVIOUS_COMMIT_ID  # Checkout the previous commit
-          echo "Checked out commit: $PREVIOUS_COMMIT_ID"
+          git checkout $PREVIOUS_COMMIT_ID
 
-      # Step 3: Redeploy Application
+      # Step 4: Redeploy Application
       - name: Redeploy Application
-        if: env.action == 'Reject'
+        if: env.action == 'reject'
         run: |
           echo "Redeploying application from commit: ${{ env.PREVIOUS_COMMIT_ID }}"
           cd QA
@@ -45,8 +61,8 @@ jobs:
           databricks sync Notebooks /Workspace/Shared
           echo "Deployment reverted successfully."
 
-      # Step 4: Confirm Approval
+      # Step 5: Confirm Approval
       - name: Confirm Approval
-        if: env.action == 'Approve'
+        if: env.action == 'approve'
         run: |
           echo "Deployment approved. No further action required."
