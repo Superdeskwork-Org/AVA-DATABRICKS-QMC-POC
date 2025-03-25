@@ -6,16 +6,6 @@ on:
     branches:
       - main
 
-  # Trigger manually via workflow_dispatch for rollback
-  workflow_dispatch:
-    inputs:
-      action:
-        description: "Choose action"
-        required: true
-        type: choice
-        options:
-          - Approve
-          - Reject
 
 jobs:
   pre-deployment-approval:
@@ -77,54 +67,10 @@ jobs:
           cd AVA-DATABRICKS-QMC-POC
           databricks sync Notebooks /Workspace/Shared/Notebooks
 
-  rollback-steps:
+  post-deployment-approval:
+    needs: deploy-to-dev
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'reject'
+    environment: post-deployment-approval
     steps:
-      # Step 1: Simulate Manual Approval with Inputs
-      - name: Simulate Post-Deployment Approval
-        run: |
-          echo "Post-deployment approval requested. Waiting for QA approver to approve."
-          echo "Selected action: ${{ github.event.inputs.action }}"
-          $ACTION = "${{ github.event.inputs.action }}".ToLower()  # Normalize to lowercase in PowerShell
-          echo "action=$ACTION" >> $env:GITHUB_ENV
-
-      # Debug Action Variable
-      - name: Debug Action Variable
-        run: |
-          echo "Action variable value: ${{ env.action }}"
-
-      # Step 2: Check Out Repository
-      - name: Check Out Repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Fetch all commits to access the previous commit ID
-
-      # Debug Commit History
-      - name: Debug Commit History
-        run: |
-          echo "Current commit: $(git rev-parse HEAD)"
-          echo "Previous commit: $(git rev-parse HEAD^)"
-
-      # Step 3: Revert to Previous Commit if Rejected
-      - name: Revert to Previous Commit
-        run: |
-          echo "Reverting deployment to previous commit..."
-          $PREVIOUS_COMMIT_ID = git rev-parse HEAD^  # Get the previous commit ID
-          echo "Previous commit ID: $PREVIOUS_COMMIT_ID"
-          git checkout $PREVIOUS_COMMIT_ID
-
-      # Step 4: Redeploy Application
-      - name: Redeploy Application
-        run: |
-          echo "Redeploying application from commit: ${{ env.PREVIOUS_COMMIT_ID }}"
-          cd QA
-          cd AVA-DATABRICKS-QMC-POC
-          databricks sync Notebooks /Workspace/Shared/Notebooks
-          echo "Deployment reverted successfully."
-
-      # Step 5: Confirm Approval
-      - name: Confirm Approval
-        if: github.event.inputs.action == 'approve'
-        run: |
-          echo "Deployment approved. No further action required."
+      - name: Request Post-Deployment Approval
+        run: echo "Post-deployment approval requested. Waiting for QA approver to approve."
