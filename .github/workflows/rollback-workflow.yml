@@ -24,13 +24,7 @@ jobs:
           echo "Selected action: ${{ github.event.inputs.action }}"
           echo "action=${{ github.event.inputs.action }}" >> $GITHUB_ENV
 
-      # Step 2: Check Out Repository and Fetch Commit History
-      - name: Check Out Repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Fetch all commits to access the previous commit ID
-
-      # Step 3: Revert to Previous Commit if Rejected
+      # Step 2: Revert to Previous Commit if Rejected
       - name: Revert to Previous Commit
         if: env.action == 'Reject'
         run: |
@@ -40,7 +34,7 @@ jobs:
           git checkout $PREVIOUS_COMMIT_ID  # Checkout the previous commit
           echo "Checked out commit: $PREVIOUS_COMMIT_ID"
 
-      # Step 4: Redeploy Application
+      # Step 3: Redeploy Application
       - name: Redeploy Application
         if: env.action == 'Reject'
         run: |
@@ -50,7 +44,7 @@ jobs:
           databricks sync Notebooks /Workspace/Shared
           echo "Deployment reverted successfully."
 
-      # Step 5: Confirm Approval
+      # Step 4: Confirm Approval
       - name: Confirm Approval
         if: env.action == 'Approve'
         run: |
