@@ -50,13 +50,31 @@ jobs:
           echo "Previous commit ID: $PREVIOUS_COMMIT_ID"
           git checkout $PREVIOUS_COMMIT_ID
 
-      # Step 4: Redeploy Application
+     # Step 4: Redeploy Application
       - name: Redeploy Application
         if: env.action == 'reject'
         run: |
           echo "Redeploying application from commit: ${{ env.PREVIOUS_COMMIT_ID }}"
+          
+          # Ensure the QA directory exists
+          if (-Not (Test-Path "QA")) {
+            echo "QA directory does not exist. Creating it..."
+            New-Item -ItemType Directory -Path "QA"
+          }
           cd QA
+
+          # Checkout the AVA-DATABRICKS-QMC-POC directory at the previous commit
+          if (-Not (Test-Path "AVA-DATABRICKS-QMC-POC")) {
+            echo "AVA-DATABRICKS-QMC-POC directory does not exist. Cloning it..."
+            git clone --branch main "${{ vars.REPO_PAT }}" AVA-DATABRICKS-QMC-POC
+          }
           cd AVA-DATABRICKS-QMC-POC
+
+          # Checkout the previous commit explicitly
+          echo "Checking out the previous commit: ${{ env.PREVIOUS_COMMIT_ID }}"
+          git checkout ${{ env.PREVIOUS_COMMIT_ID }}
+
+          # Synchronize with Databricks
           databricks sync Notebooks /Workspace/Shared/Notebooks
           echo "Deployment reverted successfully."
 
