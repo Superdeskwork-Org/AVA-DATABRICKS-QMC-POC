@@ -12,14 +12,13 @@ on:
           - Reject
 
 jobs:
-  post-deployment-approval:
+  Roll-back-setup:
     runs-on: self-hosted
-    environment: post-deployment-approval
+ 
 
     steps:
       # Step 1: Simulate Manual Approval with Inputs
       - name: Simulate Post-Deployment Approval
-        id: post-deployment-approval
         run: |
           echo "Post-deployment approval requested. Waiting for QA approver to approve."
           echo "Selected action: ${{ github.event.inputs.action }}"
