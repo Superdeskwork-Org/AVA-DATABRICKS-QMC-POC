@@ -57,7 +57,7 @@ jobs:
         run: |
           cd QA
           cd AVA-DATABRICKS-QMC-POC
-          databricks sync Notebooks /Workspace/Shared
+          databricks sync Notebooks /Workspace/Shared/Notebooks
           
   post-deployment-approval:
     needs: deploy-to-dev
