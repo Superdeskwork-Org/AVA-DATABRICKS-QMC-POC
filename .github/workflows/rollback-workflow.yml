@@ -21,8 +21,8 @@ jobs:
         run: |
           echo "Post-deployment approval requested. Waiting for QA approver to approve."
           echo "Selected action: ${{ github.event.inputs.action }}"
-          ACTION=$(echo "${{ github.event.inputs.action }}" | tr '[:upper:]' '[:lower:]')  # Normalize to lowercase
-          echo "action=$ACTION" >> $GITHUB_ENV
+          $ACTION = "${{ github.event.inputs.action }}".ToLower()  # Normalize to lowercase in PowerShell
+          echo "action=$ACTION" >> $env:GITHUB_ENV
 
       # Debug Action Variable
       - name: Debug Action Variable
