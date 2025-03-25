@@ -41,12 +41,12 @@ jobs:
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Previous commit: $(git rev-parse HEAD^)"
 
-      # Step 3: Revert to Previous Commit if Rejected
+     # Step 3: Revert to Previous Commit if Rejected
       - name: Revert to Previous Commit
         if: env.action == 'reject'
         run: |
           echo "Reverting deployment to previous commit..."
-          PREVIOUS_COMMIT_ID=$(git rev-parse HEAD^)
+          $PREVIOUS_COMMIT_ID = git rev-parse HEAD^  # Get the previous commit ID
           echo "Previous commit ID: $PREVIOUS_COMMIT_ID"
           git checkout $PREVIOUS_COMMIT_ID
 
@@ -57,7 +57,7 @@ jobs:
           echo "Redeploying application from commit: ${{ env.PREVIOUS_COMMIT_ID }}"
           cd QA
           cd AVA-DATABRICKS-QMC-POC
-          databricks sync Notebooks /Workspace/Shared
+          databricks sync Notebooks /Workspace/Shared/Notebooks
           echo "Deployment reverted successfully."
 
       # Step 5: Confirm Approval
