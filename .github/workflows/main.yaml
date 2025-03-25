@@ -1,8 +1,22 @@
-name: Databricks Deployment
+name: Databricks Deployment and Rollback
+
 on:
+  # Trigger on push to main branch for deployment
   push:
     branches:
       - main
+
+  # Trigger manually via workflow_dispatch for rollback
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose action"
+        required: true
+        type: choice
+        options:
+          - Approve
+          - Reject
+
 jobs:
   pre-deployment-approval:
     runs-on: self-hosted
@@ -10,6 +24,7 @@ jobs:
     steps:
       - name: Request Pre-Deployment Approval
         run: echo "Pre-deployment approval requested. Waiting for approver to approve."
+
   deploy-to-dev:
     needs: pre-deployment-approval
     runs-on: self-hosted
@@ -23,6 +38,7 @@ jobs:
           } else {
             Write-Host "Databricks CLI is already installed."
           }
+
       # Step 2: Authenticate Dev Databricks Workspace
       - name: Authenticate Dev Databricks Workspace
         run: |
@@ -35,6 +51,7 @@ jobs:
           "@ | Out-File -FilePath "$env:USERPROFILE\.databrickscfg" -Encoding utf8
           icacls "$env:USERPROFILE\.databrickscfg" /inheritance:r /grant:r "$env:USERNAME`:F"
           databricks auth profiles
+
       # Step 3: Download Files from Remote Repository to Local Workspace
       - name: Download the Files from Remote repo to Local workspace
         run: |
@@ -52,17 +69,62 @@ jobs:
             git clone --branch main "${{ vars.REPO_PAT }}" AVA-DATABRICKS-QMC-POC  # Clone into the 'AVA-DATABRICKS-QMC-POC' subfolder
             Set-Location ..
           }
+
       # Step 4: Synchronize Local Folder with Databricks
-      - name: Synchronize Local folder with databricks
+      - name: Synchronize Local folder with Databricks
         run: |
           cd QA
           cd AVA-DATABRICKS-QMC-POC
           databricks sync Notebooks /Workspace/Shared/Notebooks
-          
-  post-deployment-approval:
-    needs: deploy-to-dev
+
+  rollback-steps:
     runs-on: self-hosted
-    environment: post-deployment-approval
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'reject'
     steps:
-      - name: Request Post-Deployment Approval
-        run: echo "Post-deployment approval requested. Waiting for QA approver to approve."
+      # Step 1: Simulate Manual Approval with Inputs
+      - name: Simulate Post-Deployment Approval
+        run: |
+          echo "Post-deployment approval requested. Waiting for QA approver to approve."
+          echo "Selected action: ${{ github.event.inputs.action }}"
+          $ACTION = "${{ github.event.inputs.action }}".ToLower()  # Normalize to lowercase in PowerShell
+          echo "action=$ACTION" >> $env:GITHUB_ENV
+
+      # Debug Action Variable
+      - name: Debug Action Variable
+        run: |
+          echo "Action variable value: ${{ env.action }}"
+
+      # Step 2: Check Out Repository
+      - name: Check Out Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all commits to access the previous commit ID
+
+      # Debug Commit History
+      - name: Debug Commit History
+        run: |
+          echo "Current commit: $(git rev-parse HEAD)"
+          echo "Previous commit: $(git rev-parse HEAD^)"
+
+      # Step 3: Revert to Previous Commit if Rejected
+      - name: Revert to Previous Commit
+        run: |
+          echo "Reverting deployment to previous commit..."
+          $PREVIOUS_COMMIT_ID = git rev-parse HEAD^  # Get the previous commit ID
+          echo "Previous commit ID: $PREVIOUS_COMMIT_ID"
+          git checkout $PREVIOUS_COMMIT_ID
+
+      # Step 4: Redeploy Application
+      - name: Redeploy Application
+        run: |
+          echo "Redeploying application from commit: ${{ env.PREVIOUS_COMMIT_ID }}"
+          cd QA
+          cd AVA-DATABRICKS-QMC-POC
+          databricks sync Notebooks /Workspace/Shared/Notebooks
+          echo "Deployment reverted successfully."
+
+      # Step 5: Confirm Approval
+      - name: Confirm Approval
+        if: github.event.inputs.action == 'approve'
+        run: |
+          echo "Deployment approved. No further action required."
