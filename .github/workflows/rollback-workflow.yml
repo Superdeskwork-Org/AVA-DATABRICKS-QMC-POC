@@ -41,6 +41,13 @@ jobs:
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Previous commit: $(git rev-parse HEAD^)"
 
+      # Step 3: Post-Deployment Approval
+      - name: Simulate Post-Deployment Approval
+        run: |
+          echo "Selected action: ${{ github.event.inputs.action }}"
+          $ACTION = "${{ github.event.inputs.action }}".ToLower()  # Normalize to lowercase in PowerShell
+          echo "action=$ACTION" >> $env:GITHUB_ENV
+          
      # Step 4: Redeploy Application
       - name: Redeploy Application
         if: env.action == 'reject'
@@ -63,7 +70,7 @@ jobs:
 
           # Revert to the current commit explicitly
           echo "Checking out the current commit: ${{ env.CURRENT_COMMIT_ID }}"
-          git revert --no-edit $CURRENT_COMMIT_ID  # Create a new commit that reverts the latest commit
+          git revert --no-edit $(git rev-parse HEAD)  # Create a new commit that reverts the latest commit
 
           # Synchronize with Databricks
           databricks sync Notebooks /Workspace/Shared/Notebooks
