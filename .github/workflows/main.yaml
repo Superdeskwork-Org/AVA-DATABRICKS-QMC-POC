@@ -42,31 +42,14 @@ jobs:
           icacls "$env:USERPROFILE\.databrickscfg" /inheritance:r /grant:r "$env:USERNAME`:F"
           databricks auth profiles
 
-      # Step 3: Download Files from Remote Repository to Local Workspace
+        # Step 3: Download Files from Remote Repository to Local Workspace
       - name: Download the Files from Remote repo to Local workspace
         run: |
           if (Test-Path "QA") {
             Write-Host "Folder exists. Pulling latest changes..."
             Set-Location QA
             Set-Location AVA-DATABRICKS-QMC-POC
-
-            # Check for uncommitted changes
-            $status = git status --porcelain
-            if ($status) {
-              Write-Host "Uncommitted changes detected. Stashing changes..."
-              git stash push -m "Stash local changes before pull"
-            }
-
-            # Pull the latest changes
             git pull origin main
-
-            # Reapply stashed changes if needed
-            $stashList = git stash list
-            if ($stashList) {
-              Write-Host "Reapplying stashed changes..."
-              git stash pop
-            }
-
             Set-Location ..
             Set-Location ..
           } else {
