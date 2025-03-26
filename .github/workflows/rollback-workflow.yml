@@ -41,20 +41,11 @@ jobs:
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Previous commit: $(git rev-parse HEAD^)"
 
-     # Step 3: Revert to Previous Commit if Rejected
-      - name: Revert to Previous Commit
-        if: env.action == 'reject'
-        run: |
-          echo "Reverting deployment to previous commit..."
-          $PREVIOUS_COMMIT_ID = git rev-parse HEAD^  # Get the previous commit ID
-          echo "Previous commit ID: $PREVIOUS_COMMIT_ID"
-          git checkout $PREVIOUS_COMMIT_ID
-
      # Step 4: Redeploy Application
       - name: Redeploy Application
         if: env.action == 'reject'
         run: |
-          echo "Redeploying application from commit: ${{ env.PREVIOUS_COMMIT_ID }}"
+          echo "Redeploying application from commit: ${{ env.CURRENT_COMMIT_ID }}"
           
           # Ensure the QA directory exists
           if (-Not (Test-Path "QA")) {
@@ -63,16 +54,16 @@ jobs:
           }
           cd QA
 
-          # Checkout the AVA-DATABRICKS-QMC-POC directory at the previous commit
+          # Revert the AVA-DATABRICKS-QMC-POC directory to the current commit
           if (-Not (Test-Path "AVA-DATABRICKS-QMC-POC")) {
             echo "AVA-DATABRICKS-QMC-POC directory does not exist. Cloning it..."
             git clone --branch main "${{ vars.REPO_PAT }}" AVA-DATABRICKS-QMC-POC
           }
           cd AVA-DATABRICKS-QMC-POC
 
-          # Checkout the previous commit explicitly
-          echo "Checking out the previous commit: ${{ env.PREVIOUS_COMMIT_ID }}"
-          git checkout ${{ env.PREVIOUS_COMMIT_ID }}
+          # Revert to the current commit explicitly
+          echo "Checking out the current commit: ${{ env.CURRENT_COMMIT_ID }}"
+          git revert --no-edit $CURRENT_COMMIT_ID  # Create a new commit that reverts the latest commit
 
           # Synchronize with Databricks
           databricks sync Notebooks /Workspace/Shared/Notebooks
