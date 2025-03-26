@@ -48,12 +48,10 @@ jobs:
           $ACTION = "${{ github.event.inputs.action }}".ToLower()  # Normalize to lowercase in PowerShell
           echo "action=$ACTION" >> $env:GITHUB_ENV
           
-     # Step 4: Redeploy Application
-      - name: Redeploy Application
+# Step 4: Redeploy Application (Rollback Process)
+      - name: Revert Changes Without Pushing to Main Branch
         if: env.action == 'reject'
         run: |
-          echo "Redeploying application from commit: ${{ env.CURRENT_COMMIT_ID }}"
-          
           # Ensure the QA directory exists
           if (-Not (Test-Path "QA")) {
             echo "QA directory does not exist. Creating it..."
@@ -61,20 +59,40 @@ jobs:
           }
           cd QA
 
-          # Revert the AVA-DATABRICKS-QMC-POC directory to the current commit
+          # Clone the repository into AVA-DATABRICKS-QMC-POC directory
           if (-Not (Test-Path "AVA-DATABRICKS-QMC-POC")) {
             echo "AVA-DATABRICKS-QMC-POC directory does not exist. Cloning it..."
             git clone --branch main "${{ vars.REPO_PAT }}" AVA-DATABRICKS-QMC-POC
           }
           cd AVA-DATABRICKS-QMC-POC
 
-          # Revert to the current commit explicitly
-          echo "Checking out the current commit: ${{ env.CURRENT_COMMIT_ID }}"
-          git revert --no-edit $(git rev-parse HEAD)  # Create a new commit that reverts the latest commit
+          # Create a temporary branch for the rollback process
+          echo "Creating a temporary branch for rollback..."
+          git checkout -b temp-rollback-branch
 
-          # Synchronize with Databricks
+          # Identify the latest commit ID
+          $LATEST_COMMIT_ID = git rev-parse HEAD
+          echo "Latest commit ID: $LATEST_COMMIT_ID"
+
+          # Revert the latest commit in the temporary branch
+          echo "Reverting the latest commit: $LATEST_COMMIT_ID"
+          git revert --no-edit $LATEST_COMMIT_ID
+
+          # Verify the state of the repository after the revert
+          echo "Repository state after revert:"
+          git log -1 --oneline
+
+          # Synchronize the reverted state with Databricks
+          echo "Synchronizing reverted state with Databricks..."
           databricks sync Notebooks /Workspace/Shared/Notebooks
+
+          # Delete the temporary branch after synchronization
+          echo "Deleting the temporary branch..."
+          git checkout main
+          git branch -D temp-rollback-branch
+
           echo "Deployment reverted successfully."
+
 
       # Step 5: Confirm Approval
       - name: Confirm Approval
