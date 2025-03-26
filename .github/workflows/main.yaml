@@ -49,7 +49,24 @@ jobs:
             Write-Host "Folder exists. Pulling latest changes..."
             Set-Location QA
             Set-Location AVA-DATABRICKS-QMC-POC
+
+            # Check for uncommitted changes
+            $status = git status --porcelain
+            if ($status) {
+              Write-Host "Uncommitted changes detected. Stashing changes..."
+              git stash push -m "Stash local changes before pull"
+            }
+
+            # Pull the latest changes
             git pull origin main
+
+            # Reapply stashed changes if needed
+            $stashList = git stash list
+            if ($stashList) {
+              Write-Host "Reapplying stashed changes..."
+              git stash pop
+            }
+
             Set-Location ..
             Set-Location ..
           } else {
@@ -59,7 +76,7 @@ jobs:
             git clone --branch main "${{ vars.REPO_PAT }}" AVA-DATABRICKS-QMC-POC  # Clone into the 'AVA-DATABRICKS-QMC-POC' subfolder
             Set-Location ..
           }
-
+          
       # Step 4: Synchronize Local Folder with Databricks
       - name: Synchronize Local folder with Databricks
         run: |
