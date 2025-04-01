@@ -1,0 +1,134 @@
+relationship 7bd9ef7c-271e-484e-abdf-ad0af7cc1dd6
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Financial.FIN_REPORT_MONTH
+	toColumn: LocalDateTable_cc25e2c7-2546-427d-817c-26d18016bb9d.Date
+
+relationship ccd83fce-b224-4ee9-85b4-f49178515f7b
+	joinOnDateBehavior: datePartOnly
+	fromColumn: School.'SCD End Date'
+	toColumn: LocalDateTable_d51f6acf-17de-4412-8577-b041d5b9ab36.Date
+
+relationship 84995f7b-bdb4-47a2-925b-6155c5edb567
+	fromColumn: Financial.Date
+	toColumn: Date.DATE_ID
+
+relationship 775d9eec-d642-42bc-95d0-3d6e9e9ee1f9
+	joinOnDateBehavior: datePartOnly
+	fromColumn: School.AcceptingChildrenDate
+	toColumn: LocalDateTable_9dcb4979-f030-4acb-8259-2628a981c69d.Date
+
+relationship ca75bd3c-456d-4605-9393-f7229cd950af
+	toCardinality: many
+	fromColumn: NPS.SCHOOL_FMS_ID
+	toColumn: School.'School FMS ID'
+
+relationship 6ddc992b-894d-438b-9545-043b8113c36d
+	fromColumn: NPS.Latest
+	toColumn: Date.DATE_ID
+
+relationship 26c5e32a-bce8-41f5-99c1-3de21662e6db
+	joinOnDateBehavior: datePartOnly
+	fromColumn: School.'Accepting Children Date'
+	toColumn: LocalDateTable_10b04588-4bdc-48bc-9139-503e134ea862.Date
+
+relationship 0d56eafb-8c80-4508-3e99-d6df1b855cce
+	toCardinality: many
+	fromColumn: School.'School Number'
+	toColumn: RLS.'School Number'
+
+relationship 3d86596e-fc95-4c03-9ec9-fad296eee13c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RefreshTime.DateTime
+	toColumn: LocalDateTable_f52e3fe0-b55a-4f16-9f91-f4d99c8495bd.Date
+
+relationship d78a0ad2-eeb9-44e5-b210-0a72aa661238
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RefreshTime.Date
+	toColumn: LocalDateTable_c9f8b71b-0a18-425d-a0bf-e35241d26035.Date
+
+relationship b5c6eaab-3d8f-4f23-a3f3-c88ae7479aeb
+	joinOnDateBehavior: datePartOnly
+	fromColumn: School.Days_Open
+	toColumn: LocalDateTable_1933dcdf-7fcf-478b-88ef-c4e3d8cfa464.Date
+
+relationship c39702d9-a898-4d87-a510-1e6af2f3fe32
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Financial.ReportingDate
+	toColumn: LocalDateTable_3bc11c8e-b7d4-433b-bb11-87c8547a7510.Date
+
+relationship d02b339e-a086-4646-a0af-51cf4aa73b9f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Financial.SubmittedOn
+	toColumn: LocalDateTable_90f5cf8c-8599-4fbb-be85-631ee6352c7c.Date
+
+relationship a9d387b1-b0ff-7a50-bff0-714e0fd7593f
+	fromColumn: FTE.number
+	toColumn: School.'School Number'
+
+relationship 9e0f2e3f-cd73-d856-8c43-3938792d4c8b
+	fromColumn: FTE.week_ending_date
+	toColumn: Date.DATE_ID
+
+relationship a2f6ecd3-aef3-4bbd-b8fe-7a1e995e49e5
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'Financial Sys'.FIN_REPORT_MONTH
+	toColumn: LocalDateTable_b7c72c6f-54b5-4bb3-9d98-9449d9c84090.Date
+
+relationship afbaaa09-046b-4bec-a7d9-771f09f7899f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'Financial Sys'.ReportingDate
+	toColumn: LocalDateTable_71042df5-887d-4ec3-98e5-1cf54e4766f1.Date
+
+relationship 215510d3-7284-49ff-8447-8e29447cff8d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'Financial Sys'.SubmittedOn
+	toColumn: LocalDateTable_f307c75a-019d-446f-9577-acf3ba6586a3.Date
+
+relationship 252f753b-597e-d320-69fd-f9ab0e94a2ba
+	fromColumn: 'Financial Sys'.Date
+	toColumn: Date.DATE_ID
+
+relationship 6936472d-1404-1de3-1571-6523c7deb56e
+	fromColumn: 'NPS Sys'.Latest
+	toColumn: Date.DATE_ID
+
+relationship 55dda690-a78d-afa6-047b-1bde4fa035d4
+	fromColumn: 'FTE Sys'.week_ending_date
+	toColumn: Date.DATE_ID
+
+relationship 2af3fe6e-7347-4bd5-96c0-abc298353cbd
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'School Sys'.'Accepting Children Date'
+	toColumn: LocalDateTable_a1409f87-9682-4963-8713-0a2b684faa60.Date
+
+relationship 9d5813f8-e42d-4487-af75-1a3074aba116
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'School Sys'.'SCD End Date'
+	toColumn: LocalDateTable_c11ccffd-5238-43cd-9a74-2997560e90ea.Date
+
+relationship 4be4b1bc-318f-438d-9537-587e1c7f8e30
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'School Sys'.AcceptingChildrenDate
+	toColumn: LocalDateTable_3cdcee18-35c4-4bb1-9256-fb7137a4ce36.Date
+
+relationship 04c35161-eb85-41c1-9b49-ad2a70b1f80d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'School Sys'.Days_Open
+	toColumn: LocalDateTable_572fc028-3322-4647-aa0e-12e86ba1948f.Date
+
+relationship AutoDetected_5ccc50d3-d521-4560-85a9-e131ea543ebb
+	fromColumn: 'NPS Sys'.SCHOOL_FMS_ID
+	toColumn: 'School Sys'.'School FMS ID'
+
+relationship 886ec894-17d8-4b9d-0932-4e2ee75532b2
+	fromColumn: 'FTE Sys'.number
+	toColumn: 'School Sys'.'School Number'
+
+relationship 693271e8-70cc-2214-8848-4fc5734a60f1
+	fromColumn: 'Financial Sys'.SCHOOL_SK
+	toColumn: 'School Sys'.'School SK'
+
+relationship 02e83572-98ff-8bf8-12f5-60a743efb5c8
+	fromColumn: Financial.SCHOOL_NUMBER
+	toColumn: School.'School Number'
+

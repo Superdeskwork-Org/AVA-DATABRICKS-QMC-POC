@@ -1,0 +1,120 @@
+table 'Fran NPS avg System'
+	lineageTag: a813373c-5e53-4c1f-855f-86488d77a41f
+
+	column FMS_SCHOOL_NAME
+		lineageTag: c00cf19f-7192-427c-b754-dc5fb07d0471
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: School Sys[FMS_SCHOOL_NAME]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Rank
+		formatString: 0
+		lineageTag: 92d60ba1-ba51-4f30-8fea-d18c9b4848bc
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Rank]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fran NPS'
+		lineageTag: 9ba1b1cf-cde6-4f42-b473-415cf173c88b
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Fran NPS]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'Fran NPS avg System' = calculated
+		mode: import
+		source = ```
+				
+				VAR Max_date = MAX('Date'[DATE_ID])
+				VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) 
+				
+				VAR Sys_rank = 
+				    CALCULATE(
+				        [Fran NPS 12months Rank], 
+				        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+				    )
+				
+				VAR k1 = ROUND([Fran mature] / 3, 0)
+				VAR k2 = k1 * 2
+				
+				-- Create a summarized table with ranks and NPS
+				VAR RankingList = 
+				    ADDCOLUMNS(
+				        SUMMARIZE(
+				            FILTER(
+				                'School Sys', 
+				                NOT ISBLANK([Fran NPS 12months])
+				            ),
+				            'School Sys'[FMS_SCHOOL_NAME]
+				        ),
+				        "Fran NPS", [Fran NPS 12months]
+				    )
+				
+				VAR kValues = 
+				    ADDCOLUMNS(
+				        RankingList,
+				        "Rank", RANKX(
+				            RankingList, 
+				            [Fran NPS], 
+				            , 
+				            DESC, 
+				            DENSE
+				        )
+				    )
+				
+				-- Determine the category of the selected school
+				VAR SelectedCategory = 
+				    SWITCH(
+				        TRUE(),
+				        Sys_rank <= k1, "High",
+				        Sys_rank > k2, "Low",
+				        "Mid"
+				    )
+				
+				-- Calculate the average NPS for each category using variables 
+				VAR AvgLow = 
+				    CALCULATE (
+				        AVERAGEX ( 
+				            FILTER ( kValues, [Rank] > k2 ), 
+				            [Fran NPS]
+				        )
+				    )
+				
+				VAR AvgHigh = 
+				    CALCULATE (
+				        AVERAGEX ( 
+				            FILTER ( kValues, [Rank] <= k1 ), 
+				            [Fran NPS]
+				        )
+				    )
+				
+				VAR AvgMid =
+				    CALCULATE (
+				        AVERAGEX ( 
+				            FILTER ( kValues, [Rank] > k1 && [Rank] <= k2 ), 
+				            [Fran NPS]
+				        )
+				    )
+				
+				-- Select the average NPS based on the category
+				VAR AverageNPS = 
+				    SWITCH(
+				        SelectedCategory,
+				        "Low", AvgLow,
+				        "High", AvgHigh,
+				        "Mid", AvgMid
+				    )
+				
+				RETURN 
+				    kValues
+				```
+
+	annotation PBI_Id = cb5ad812dbe24bb085d60898465bb6d4
+

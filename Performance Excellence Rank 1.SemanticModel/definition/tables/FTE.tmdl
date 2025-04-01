@@ -1,0 +1,81 @@
+table FTE
+	lineageTag: dc87713e-cd83-40b7-8d5b-84857fdd98b3
+
+	column weekly_occupancy = DIVIDE('FTE'[MATHFTE],'FTE'[CAPACITY],BLANK())
+		dataType: double
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: f597885b-1e00-460b-952d-ff4fc36a9fbc
+		summarizeBy: sum
+
+		changedProperty = FormatString
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	column number
+		dataType: int64
+		formatString: 0
+		lineageTag: 3c1e477d-102e-46ac-94eb-053781e49448
+		summarizeBy: none
+		sourceColumn: number
+
+		annotation SummarizationSetBy = Automatic
+
+	column week_ending_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c346a258-9a52-4751-97e9-68b4c5c12ac8
+		summarizeBy: none
+		sourceColumn: week_ending_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column MATHFTE
+		dataType: double
+		lineageTag: 1f8a9de2-bbc2-41e2-86ae-7f459917d68e
+		summarizeBy: sum
+		sourceColumn: MATHFTE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TOTALFTES
+		dataType: double
+		lineageTag: 3ca11da1-32cf-45a2-af1c-dc0b00192412
+		summarizeBy: sum
+		sourceColumn: TOTALFTES
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CAPACITY
+		dataType: double
+		lineageTag: 58784912-a65c-416d-b559-cb187fa0302e
+		summarizeBy: sum
+		sourceColumn: CAPACITY
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition FTE-fd454410-c421-4ad8-a29c-e6ba5d431e13 = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw"),
+				    WORK_WEEKLY_FTE_VW = Source{[Schema="WORK",Item="WEEKLY_FTE_VW"]}[Data],
+				    #"Removed Columns" = Table.RemoveColumns(WORK_WEEKLY_FTE_VW,{"name", "school", "state", "marketing_region", "market", "open date"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Removed Columns",{{"week_ending_date", type date}, {"number", Int64.Type}}),
+				    #"Removed Columns1" = Table.RemoveColumns(#"Changed Type",{"ATTENDINGSTUDENTS", "MATHMATICALFTESTARTS", "MATHMATICALFTEDROPS", "ABSENT STUDENTS", "MATH LOST FTE"})
+				in
+				    #"Removed Columns1"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

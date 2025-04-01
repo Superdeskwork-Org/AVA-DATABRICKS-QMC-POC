@@ -1,0 +1,14 @@
+expression 'WORK DIM_SCHOOL_VW (2)' =
+		let
+		    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw", [Query="#(lf)#(lf)select * from#(lf)(#(lf)select  *,RANK () OVER ( partition by school_fms_id#(lf)ORDER BY last_sale_dt desc#(lf)) AS Rank_no #(lf)from#(lf)work.dim_School scl#(lf)where #(lf)accepting_children_dt <=getdate() and#(lf)is_test_school_ind=0 and#(lf)scd_end_dt is null and #(lf)IS_ACTIVE_IND = 1#(lf)and fms_school_name is not null#(lf))as base#(lf)where rank_no=1#(lf)"]),
+		    #"Filtered Rows1" = Table.SelectRows(Source, each ([IS_ACTIVE_IND] = true) and ([CRM_STATUS] = "Active" or [CRM_STATUS] = "Construction")),
+		    #"Removed Columns" = Table.RemoveColumns(#"Filtered Rows1",{"SCHOOL_FMS_ID", "SCHOOL_CRM_ID", "ACCOUNT_SK", "FMS_SCHOOL_NUMBER", "CRM_SCHOOL_NUMBER", "REGION_NUMBER", "ADVERTISING_NAME", "ADDRESS_LINE1", "ADDRESS_LINE2", "CITY", "REGION", "POSTAL_CODE", "COUNTRY", "ACCEPTING_CHILDREN_DT", "LEASE_PURCHASE_DT", "ORIGINAL_PROJECTED_TWP_APPROVAL_DT", "TWP_PROJECTED_SITE_PLAN_APPROVAL_DT", "ORIGINAL_PROJECTED_BUILDING_PERMIT_DT", "PROJECTED_BUILDING_PERMIT_DT", "ACTUAL_BUILDING_PERMIT_DT", "ORIGINAL_PROJECTED_CONSTRUCTION_START_DT", "PROJECTED_CONSTRUCTION_START_DT", "CONSTRUCTION_START_DT", "ORIGINAL_CO_DT", "TARGET_CO_DT", "CO_DT", "ORIGINAL_PROJECTED_LICENSE_DT", "LICENSE_DT", "PROJECTED_ACCEPTING_CHILDREN_DT", "SCHOOL_CLOSED_DT", "ACTUAL_TOWNSHIP_APPROVAL_DT", "CURRENT_PROJECTED_LICENSE_DT", "FTE_CAPACITY_VAL", "FOOD_SERV_STATUS", "MIGRATION_DT", "IS_TEST_SCHOOL_IND", "CERTIFICATE_OF_OCCUPANCY_DT", "IS_ACCREDITED_IND", "LATITUDE", "LONGITUDE", "ENABLE_ELEMENTARY_SCHOOL_SUPPORT_IND", "IS_SAEPIO_SCHOOL_IND", "IS_CPAA_SCHOOL_IND", "DEVELOPMENT_STAGE", "CRM_STATUS_CODE", "IS_TS_GOLD_SCHOOL_IND", "IS_SEGMENTATION_SCHOOL_IND", "FRANCHISE_NAME", "CRM_RECORD_CREATED_ON_DT", "LAST_SALE_DT", "LAST_RELOCATED_DT", "CRM_STATUS", "FMS_STATUS", "MATURE_SCHOOL_IND", "CORE_FTE_CAPACITY_VAL", "IS_ACTIVE_IND", "IS_UPDATE_IND", "DW_CREATE_DT", "DW_UPDATE_DT", "SCD_START_DT", "BATCH_ID"}),
+		    #"Filtered Rows" = Table.SelectRows(#"Removed Columns", each ([SCD_END_DT] = null))
+		in
+		    #"Filtered Rows"
+	lineageTag: eedfd78e-be6d-484a-a385-7e122ca29926
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

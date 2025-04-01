@@ -1,0 +1,81 @@
+table RLS
+	lineageTag: 792728e9-228d-47c3-813a-d064d68e74d7
+
+	column 'School Name'
+		dataType: string
+		lineageTag: 8b8ba7b2-7340-43e5-b645-e478f2301129
+		summarizeBy: none
+		sourceColumn: School Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'School Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: cb917da5-ab5f-416e-b488-d5b3d949e485
+		summarizeBy: none
+		sourceColumn: School Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'FC Email'
+		dataType: string
+		lineageTag: 0aefca5d-1dd7-40e6-98ae-380d72349427
+		summarizeBy: none
+		sourceColumn: FC Email
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Regional Director'
+		dataType: string
+		lineageTag: e2e00f4a-5c37-4406-9341-735d1e68019e
+		summarizeBy: none
+		sourceColumn: Regional Director
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'FC Email_updated' = If(RLS[FC Email] = "jharvey@goddardsystems.onmicrosoft.com", "jharvey@goddardsystems.com",RLS[FC Email])
+		lineageTag: bed4b878-d17f-4eed-9950-76b881c183b3
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Regional Director Email'
+		dataType: string
+		lineageTag: 04075bdc-44b8-4e41-bb38-0e0e85bae0d7
+		summarizeBy: none
+		sourceColumn: Regional Director Email
+
+		annotation SummarizationSetBy = Automatic
+
+	column FC
+		dataType: string
+		lineageTag: ac9a32f3-b89f-402b-8c99-92e5b7d37e57
+		summarizeBy: none
+		sourceColumn: FC
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Default School'
+		dataType: string
+		lineageTag: 10a5a557-32e0-490c-99d5-1b1039eb56c4
+		summarizeBy: none
+		sourceColumn: Default School
+
+		annotation SummarizationSetBy = Automatic
+
+	partition RLS = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw", [Query="SELECT #(lf)    School_Name [School Name],#(lf)    School_number [School Number],#(lf)    MAX(CASE WHEN Role = 'FC_Business' THEN User_name END) AS FC,#(lf)    MAX(CASE WHEN Role = 'FC_Business' THEN Email_id END) AS [FC Email],#(lf)    MAX(CASE WHEN Role = 'Regional Mgr' THEN User_name END) AS [Regional Director],#(lf)    MAX(CASE WHEN Role = 'Regional Mgr' THEN Email_id END) AS [Regional Director Email]#(lf)FROM #(lf)    WORK.RLS#(lf)GROUP BY #(lf)    School_Sk, School_number, School_Name#(lf)#(tab)Order by 1"]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"School Number", Int64.Type}}),
+				    #"Sorted Rows" = Table.Sort(#"Changed Type",{{"FC", Order.Ascending}}),
+				    #"Added Conditional Column" = Table.AddColumn(#"Sorted Rows", "Default School", each if [FC] = "Angel Armbrust" then "Arvada" else if [FC] = "Autumn O'Neill" then "Akron" else if [FC] = "Azadeh Jaberi Zadeh" then "Ashland" else if [FC] = "Beth Martin" then "Blue Bell I" else if [FC] = "Brian Watkins" then "Beverly Hills" else if [FC] = "Bryan Pennington" then "Weatherly I" else if [FC] = "Casey Fontaine" then "Alexandria" else if [FC] = "Chris Ellis" then "Buckeye" else if [FC] = "Chris Talley" then "Austell" else if [FC] = "Dominique Johnson" then "Friendswood" else if [FC] = "Glenn Luzano" then "Brookfield" else if [FC] = "Jessica Slaven" then "Charlestown" else if [FC] = "Joseph Barrett" then "Annapolis" else if [FC] = "Justin Crowe" then "Austin" else if [FC] = "Kedirile Knott" then "Chandler II" else if [FC] = "Stacey Wells" then "Bordentown" else if [FC] = "Steven Weilhammer" then "Avon" else if [FC] = "Tammy Beutler" then "Aurora" else if [FC] = "Todd Belvin" then "Albertville" else if [FC] = "Sharon Darnell" then "Apex" else "Akron")
+				in
+				    #"Added Conditional Column"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

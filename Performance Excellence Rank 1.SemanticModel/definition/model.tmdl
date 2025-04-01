@@ -1,0 +1,53 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBIDesktopVersion = 2.130.754.0 (24.06)
+
+annotation PBI_QueryOrder = ["Financial","FTE","NPS","Date","School","RLS","WORK DIM_SCHOOL_VW (2)","RefreshTime","Refresh Alert","Financial Sys","FTE Sys","NPS Sys","School Sys","CoE"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+ref table Financial
+ref table DateTableTemplate_6452fee5-956a-4779-9a97-a5e93d70ece1
+ref table LocalDateTable_cc25e2c7-2546-427d-817c-26d18016bb9d
+ref table FTE
+ref table Date
+ref table School
+ref table LocalDateTable_d51f6acf-17de-4412-8577-b041d5b9ab36
+ref table LocalDateTable_9dcb4979-f030-4acb-8259-2628a981c69d
+ref table 'Measure Table'
+ref table NPS
+ref table LocalDateTable_10b04588-4bdc-48bc-9139-503e134ea862
+ref table RLS
+ref table RefreshTime
+ref table LocalDateTable_f52e3fe0-b55a-4f16-9f91-f4d99c8495bd
+ref table LocalDateTable_c9f8b71b-0a18-425d-a0bf-e35241d26035
+ref table LocalDateTable_1933dcdf-7fcf-478b-88ef-c4e3d8cfa464
+ref table 'Refresh Alert'
+ref table LocalDateTable_3bc11c8e-b7d4-433b-bb11-87c8547a7510
+ref table LocalDateTable_90f5cf8c-8599-4fbb-be85-631ee6352c7c
+ref table 'Financial Sys'
+ref table LocalDateTable_b7c72c6f-54b5-4bb3-9d98-9449d9c84090
+ref table LocalDateTable_71042df5-887d-4ec3-98e5-1cf54e4766f1
+ref table LocalDateTable_f307c75a-019d-446f-9577-acf3ba6586a3
+ref table 'FTE Sys'
+ref table 'NPS Sys'
+ref table 'School Sys'
+ref table LocalDateTable_a1409f87-9682-4963-8713-0a2b684faa60
+ref table LocalDateTable_c11ccffd-5238-43cd-9a74-2997560e90ea
+ref table LocalDateTable_3cdcee18-35c4-4bb1-9256-fb7137a4ce36
+ref table LocalDateTable_572fc028-3322-4647-aa0e-12e86ba1948f
+ref table Switch
+ref table 'Fran NPS avg System'
+ref table CoE
+
+ref role 'FC''s view'
+ref role 'All School View'
+
+ref cultureInfo en-US
+

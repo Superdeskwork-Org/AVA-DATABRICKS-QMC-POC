@@ -1,0 +1,165 @@
+table 'Financial Sys'
+	lineageTag: 05d2341d-d7c9-4b78-9952-5506360d3517
+
+	column FINANCIALS_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: cdb93776-2fef-4a59-8bde-6d0d84ad7062
+		summarizeBy: count
+		sourceColumn: FINANCIALS_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column SCHOOL_SK
+		dataType: int64
+		formatString: 0
+		lineageTag: d680738f-224e-4bfa-8ab5-ef44d936ad3b
+		summarizeBy: none
+		sourceColumn: SCHOOL_SK
+
+		annotation SummarizationSetBy = Automatic
+
+	column SCHOOL_NUMBER
+		dataType: int64
+		formatString: 0
+		lineageTag: 2125313e-3fb7-4982-8bb1-64a35cec1b4d
+		summarizeBy: sum
+		sourceColumn: SCHOOL_NUMBER
+
+		annotation SummarizationSetBy = Automatic
+
+	column CRM_School_Name
+		dataType: string
+		lineageTag: bedb3dc2-8dc8-4888-8048-d2d3fbee4f85
+		summarizeBy: none
+		sourceColumn: CRM_School_Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column FIN_REPORT_MONTH
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 6080ab09-a31f-415b-9b6b-6e5746feef97
+		summarizeBy: none
+		sourceColumn: FIN_REPORT_MONTH
+
+		variation Variation
+			isDefault
+			relationship: a2f6ecd3-aef3-4bbd-b8fe-7a1e995e49e5
+			defaultHierarchy: LocalDateTable_b7c72c6f-54b5-4bb3-9d98-9449d9c84090.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Schoolid
+		dataType: int64
+		formatString: 0
+		lineageTag: 85e99f66-cb61-4e1e-9d2d-956d32d947fc
+		summarizeBy: sum
+		sourceColumn: Schoolid
+
+		annotation SummarizationSetBy = Automatic
+
+	column ReportingDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f7019018-974e-4999-9eab-85108d49a48a
+		summarizeBy: none
+		sourceColumn: ReportingDate
+
+		variation Variation
+			isDefault
+			relationship: afbaaa09-046b-4bec-a7d9-771f09f7899f
+			defaultHierarchy: LocalDateTable_71042df5-887d-4ec3-98e5-1cf54e4766f1.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column SubmittedOn
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 55196def-44a7-455a-a678-d7422a26841d
+		summarizeBy: none
+		sourceColumn: SubmittedOn
+
+		variation Variation
+			isDefault
+			relationship: 215510d3-7284-49ff-8447-8e29447cff8d
+			defaultHierarchy: LocalDateTable_f307c75a-019d-446f-9577-acf3ba6586a3.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column TOTAL_REVENUE_FOR_MONTH_AMT
+		dataType: double
+		lineageTag: a3d83444-57af-48d1-a208-425944e0d8ee
+		summarizeBy: sum
+		sourceColumn: TOTAL_REVENUE_FOR_MONTH_AMT
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TOTAL_OP_EXPENSE_AMT
+		dataType: double
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		lineageTag: afa5ac38-3691-46a2-9ea8-fc54afdce1f9
+		summarizeBy: sum
+		sourceColumn: TOTAL_OP_EXPENSE_AMT
+
+		annotation SummarizationSetBy = Automatic
+
+	column OP_INCOME_AMT
+		dataType: double
+		lineageTag: 40c3cac8-c993-45be-8ee9-22c4a8d894fb
+		summarizeBy: sum
+		sourceColumn: OP_INCOME_AMT
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: bf5b8647-6265-4038-80b4-0b9e1e131ada
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column EBITDA = DIVIDE('Financial Sys'[OP_INCOME_AMT],'Financial Sys'[TOTAL_REVENUE_FOR_MONTH_AMT],0)
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 2ce1b214-0186-4974-a7d7-ce8e22aaadec
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column FinancialStatus
+		dataType: string
+		lineageTag: e5752572-2647-4b23-87b3-5d17a6761cd4
+		summarizeBy: none
+		sourceColumn: FinancialStatus
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Financial Sys' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw"),
+				    dbo_V_School_Financials = Source{[Schema="dbo",Item="V_School_Financials"]}[Data],
+				    #"Added Custom" = Table.AddColumn(dbo_V_School_Financials, "Date", each Date.StartOfDay([FIN_REPORT_MONTH])),
+				    #"Removed Columns" = Table.RemoveColumns(#"Added Custom",{"ACCOUNT_SK", "SD_Year", "SD_MName", "SD_Mon"})
+				in
+				    #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

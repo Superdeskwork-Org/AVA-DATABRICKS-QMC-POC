@@ -1,0 +1,2121 @@
+table 'Measure Table'
+	lineageTag: 0d0c9e34-2967-48eb-bc59-742d1dfdd277
+
+	measure NPS =
+			Var A = Calculate((sum('NPS'[Promoters])/sum(NPS[Responses])))
+			      Var B = CALCULATE(sum(NPS[Detractors])/sum(NPS[Responses]))
+			      Var C = A-B
+			      return c*100+0
+		formatString: 0.0
+		lineageTag: e76413f8-c848-44f1-8345-9c2df0a927c6
+
+		changedProperty = FormatString
+
+	measure 'NPS Rank' =
+			var a =
+			           CALCULATE(RANKX(ALLSELECTED(
+			                                    'School'[SCHOOL NAME],
+			                                    'School'[Accepting Children Date],
+			                                    'School'[State]),
+			                                    CALCULATE(if ([NPS] =0,-9999,round([NPS],1))),,,
+			                                    Skip))
+			           Return a
+		formatString: 0
+		lineageTag: 423bc6e6-fed6-47a3-afd1-389499fb8357
+
+	measure 'Avg Rank' = DIVIDE(([EBITDA Rank]+[NPS Rank]+[Occ Rank]),3,0)
+		formatString: 0
+		lineageTag: bc275f55-630e-4873-a484-18ede5510cb7
+
+	measure tempRank = [Avg Rank]*-1
+		lineageTag: 4ac11833-d15e-4bf9-8f17-510e71ad6e1c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Occ Rank' = ```
+			var a =
+			           
+			           CALCULATE(RANKX(ALLSELECTED(
+			                                    'School'[SCHOOL NAME],
+			                                    'School'[Accepting Children Date],
+			                                    'School'[State]),
+			                                    [Occupancy_NEW],,,
+			                                    Skip),NOT(ISBLANK('School'[School Number])))
+			           Return a
+			```
+		formatString: 0
+		lineageTag: 631214dc-f837-496b-b692-23e17f7fb129
+
+	measure Occupancy = CALCULATE(DIVIDE(sum('FTE'[MATHFTE]),sum('FTE'[CAPACITY])))+0
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 72e9e922-3dee-4337-92d8-a128353ea142
+
+	measure EBITDA = ```
+			var a= AVERAGE('Financial'[EBITDA])
+			                                 
+			                  Return a+0
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: d2beede5-f133-42f8-90ef-9f71eaf8fcfa
+
+		changedProperty = FormatString
+
+	measure 'EBITDA Rank' = ```
+			var a= 
+			
+			           CALCULATE(RANKX(ALLSELECTED(
+			                                    'School'[SCHOOL NAME],
+			                                    'School'[Accepting Children Date],
+			                                    'School'[State]),
+			                                     CALCULATE(if ([EBITDA] =0,-9999,[EBITDA])),,,Skip
+			                                    ),NOT(ISBLANK('School'[School Number])))
+			           Return a
+			```
+		formatString: 0
+		lineageTag: b789b2f8-05fb-4e56-8bd1-be7806114b16
+
+	measure 'Overall Rank' =
+			var a = calculate(IF(NOT(ISBLANK([tempRank])),
+			                   RANKX(FILTER(ALLSELECTED(
+			                              'School'[SCHOOL NAME],
+			                              'School'[ACCEPTING CHILDREN DATE],
+			                              'School'[State]),
+			                       ROUND([tempRank],1)),
+			                       ROUND([tempRank],1),,,Skip)))
+			return a
+		formatString: 0
+		lineageTag: 2a904214-fd1d-4620-bfef-5db9e059a21b
+
+	measure '# Schools' =
+			
+			var Max_Date = MAX('Date'[DATE_ID])
+			var School_Count = CALCULATE(DISTINCTCOUNT('School'[FMS_SCHOOL_NAME]),Max_Date>='School'[Accepting Children Date])
+			Return School_Count+0
+		formatString: 0
+		lineageTag: 7961898e-e17e-4169-aa93-afbff4c85b26
+
+	measure Accepting_Children = min('School'[Accepting Children Date])
+		formatString: General Date
+		lineageTag: c3812314-9c6e-4794-b00b-a6e832cb3682
+
+	measure 'First Date' = min('Date'[DATE_ID])
+		formatString: General Date
+		lineageTag: 62af3180-322f-4475-8f6a-9cdaf170d567
+
+	measure 'Last Date' = max('Date'[DATE_ID])
+		formatString: General Date
+		lineageTag: 4bf738ba-4b97-4aab-9dff-2b28b3590776
+
+	measure ER_step = [EBITDA]+10
+		lineageTag: dbfbc8b7-3183-490a-9186-7386bbee26c2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'NPS YTD' =
+			
+			TOTALYTD(round([NPS],1), 'Date'[DATE_ID])+0
+		formatString: 0.0
+		lineageTag: b9061b04-5835-4559-8cc1-15161556c972
+
+		changedProperty = FormatString
+
+	measure 'EBITDA YTD' =
+			
+			CALCULATE(TOTALYTD([EBITDA], 'Date'[DATE_ID]))+0
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: c7634d3d-8783-403f-907a-1397b493184b
+
+		changedProperty = FormatString
+
+	measure 'Occupancy YTD' =
+			
+			TOTALYTD(
+			    [Occupancy_NEW],
+				'Date'[DATE_ID]
+			)+0
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 4d5e5da2-4095-4114-8312-a38fadec5af8
+
+		changedProperty = FormatString
+
+	measure 'EBITDA YTD Rank' =
+			var a=calculate(RANKX(ALLSELECTED (
+			'School'[School Name],
+			'School'[State],
+			'School'[Region],
+			'School'[FRANCHISE_OWNER],
+			'School'[Market],
+			'School'[School Number]), CALCULATE(if ([EBITDA YTD] =0,-9999,[EBITDA YTD])),,,Skip
+			                                    ),NOT(ISBLANK('School'[School Number])))
+			return a
+		formatString: 0
+		lineageTag: a508ba72-1427-4177-ac0b-c5b16445d91d
+
+	measure 'NPS YTD Rank' = ```
+			var a=calculate(RANKX(ALLSELECTED (
+			'School'[School Name],
+			'School'[State],
+			'School'[Region],
+			'School'[FRANCHISE_OWNER],
+			'School'[Market],
+			'School'[School Number]), CALCULATE(if ([NPS YTD] =0,-9999,[NPS YTD])),,,Skip
+			                                    ))
+			return a
+							
+			```
+		formatString: 0
+		lineageTag: 5ffc8883-7f0a-47f3-9b76-b459d1ef2826
+
+	measure 'Occ YTD Rank' =
+			var a=calculate(RANKX(ALLSELECTED (
+			'School'[School Name],
+			'School'[State],
+			'School'[Region],
+			'School'[FRANCHISE_OWNER],
+			'School'[Market],
+			'School'[School Number]), [Occupancy YTD],,,Skip
+			                                    ),NOT(ISBLANK('School'[School Number])))
+			return a
+		formatString: 0
+		lineageTag: de9fdb97-c23a-4aeb-816d-b78c2fd1faba
+
+	measure 'Avg YTD Rank' =
+			
+			var a=divide([EBITDA YTD Rank]+[NPS YTD Rank]+[Occ YTD Rank],3,0)
+			var b=ROUNDDOWN(a,0)
+			return a
+		formatString: 0
+		lineageTag: 214a15e6-2886-436c-b56a-4c9c8ab43b7b
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure 'avg YTD Rank test' = CALCULATE(RANKX(ALL ('School'[SCHOOL NUMBER],'School'[SCHOOL NAME],'School'[FRANCHISE_OWNER],'School'[State],'School'[Market]),[Avg ytd Rank]))
+		formatString: 0
+		lineageTag: 3d6edee6-b188-4f31-a8bf-e6b9fb5dd07b
+
+	measure Occupancy_NEW =
+			VAr a =  CALCULATE(AVERAGE('FTE'[weekly_occupancy]))
+			Return a+0
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 605a56d2-afb6-4c2d-9ec4-916f94f4728d
+
+	measure 'tempRank YTD' = [Avg YTD Rank]*-1
+		lineageTag: 76be5b86-7218-4634-97e0-818a8d81afa0
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Overall Rank YTD' =
+			var a = calculate(IF(NOT(ISBLANK([tempRank YTD])),
+			                   RANKX(FILTER(ALLSELECTED(
+			                            'School'[SCHOOL NAME],
+			                            'School'[State],
+			                            'School'[FRANCHISE_OWNER],
+			                            'School'[Market],
+			                            'School'[School Number],
+			                            'School'[Region]
+			                              ),
+			                       ROUND([tempRank YTD],1)),
+			                       ROUND([tempRank YTD],1),,,Skip)))
+			return a
+		formatString: 0
+		lineageTag: 7177a16e-691a-4df1-9243-fe0aca374f59
+
+	measure 'Open date' = if(max('Date'[DATE_ID])>=SELECTEDVALUE('School'[Accepting Children Date]),1,0)
+		formatString: 0
+		lineageTag: bee8ea3c-74d4-4799-b9e2-e0ece3fe20e1
+
+	measure 'User Login' =
+			
+			var a=USERPRINCIPALNAME()
+			var c= SELECTEDVALUE(RLS[FC Email])
+			var b= if(a=c,1,0)
+			return b
+		formatString: 0
+		lineageTag: 7262a467-ac5f-4e6b-adc6-51c6184a62de
+
+	measure 'Page Navigation' = if([User Login]=1,"School Rankings","School Rankings - YTD")
+		lineageTag: d050556e-03b6-4bc3-bb05-ef70d6c7575a
+
+	measure 'Fran Title' = ```
+			
+			 var a = SELECTEDVALUE(School[FMS_SCHOOL_NAME]) 
+			 return "Performance Excellence Rank - " & a
+			
+			```
+		lineageTag: cd1d341b-1811-4ebf-bb51-f55559bec1e6
+
+	measure 'Fran Super script' = ""&UNICHAR(179)
+		lineageTag: 3198b528-a53c-4e84-a1f6-b40a3ca387f7
+
+	measure 'Fran Occ KPI' = ```
+			
+			 var occ = CALCULATE(AVERAGE('FTE'[weekly_occupancy]), DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH))+0
+			 return occ
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 08ffe6f3-463d-4c55-95be-185aa7800b43
+
+	measure 'Fran Profit' = ```
+			
+			 var occ = CALCULATE(sum(Financial[OP_INCOME_AMT])/sum(Financial[TOTAL_REVENUE_FOR_MONTH_AMT]), DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH))+0
+			 return occ
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 01659f9f-97af-4c3a-a455-b99826e52b37
+
+	measure 'Fran NPS' = ```
+			
+			var NPS_Val = 
+			 Calculate(
+			    (
+			        sum('NPS'[Promoters])/sum(NPS[Responses])
+			    )-
+			    (
+			        sum(NPS[Detractors])/sum(NPS[Responses])
+			    )
+			    , DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH))+0
+			 return NPS_Val*100
+			```
+		formatString: 0.0
+		lineageTag: c0d18889-36bb-4a43-af31-6c286c49cba4
+
+	measure 'Fran TTM Title' = ```
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -11)),month(EDATE(Max_date, -11)),1) --EDATE (11 month back end of the month)
+			 return "(" & FORMAT(Max_date_Rollback,"MMM - YYYY") & " to " & FORMAT(Max_date,"MMM - YYYY") &")"
+			
+			```
+		lineageTag: ed26cb63-2f3c-4414-bdf3-ba8f1f3a8854
+
+	measure 'Fran Occ 12months' = ```
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature
+			  
+			 var occ = CALCULATE(AVERAGE('FTE Sys'[weekly_occupancy]), DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH),'School Sys'[Accepting Children Date]<Max_date_Rollback)
+			return occ
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 82e446ba-b258-47b3-91e6-1e66647b450a
+
+	measure 'Fran Occ 12months Rank' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        [Fran Occ 12months],
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: 888aeaa0-bf79-4c8e-ab9a-ad8ed37cc7fe
+
+	measure 'Fran Occ Rank (System)' =
+			
+			
+			var a = CALCULATE([Fran Occ 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			return  a & " / " &[Fran mature]
+		lineageTag: 99b4da66-07da-44b9-ad1b-3af0c449d2c2
+
+	measure 'Fran mature' = ```
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --EDATE (11 month back end of the month)
+			 RETURN  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback)
+			```
+		formatString: 0
+		lineageTag: 61059bf4-c9c8-4fee-900c-01ff58ccc636
+
+	measure 'Fran Mature Ind' = ```
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --EDATE (11 month back end of the month)
+			 RETURN  if(SELECTEDVALUE(School[Accepting Children Date])<Max_date_Rollback,1,0)
+			```
+		formatString: 0
+		lineageTag: 95f14f1b-bd1e-4c4d-872d-637fe2984a21
+
+	measure 'Fran Occ Rank (Market)' =
+			
+			var selected_market = SELECTEDVALUE(School[Market])
+			var Market_rank = CALCULATE([Fran Occ 12months Rank],'School Sys'[Market]=selected_market,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --EDATE (11 month back end of the month)
+			 var Market_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			
+			return  Market_rank & " / " &Market_count
+		lineageTag: ea6646c8-799b-4aae-8921-d558eb8ca1fb
+
+	measure 'Fran Occ Rank (Region)' =
+			
+			var selected_region = SELECTEDVALUE(School[Region])
+			var region_rank = CALCULATE([Fran Occ 12months Rank],'School Sys'[Region]=selected_region,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			
+			return  region_rank & " / " &region_count
+		lineageTag: ca0302c2-de0c-4cad-bbec-12de863b46a5
+
+	measure 'Fran School RLS' = If(SELECTEDVALUE('School Sys'[FMS_SCHOOL_NAME])in VALUES(School[FMS_SCHOOL_NAME]), 1,0)
+		formatString: 0
+		lineageTag: e2b7c83a-644f-4a9a-93b7-3b22d6abe830
+
+	measure 'Fran Occ Format system' = ```
+			
+			var Sys_rank = CALCULATE([Fran Occ 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			    
+			 VAR k1 = Round([Fran mature]/3,0)
+			 VAR k2 = K1*2
+			
+			    RETURN 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: 3da436aa-f42c-423f-8750-bec378a74647
+
+	measure 'Fran Occ avg System' = ```
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) -- 11 months back, end of the month
+			
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran Occ 12months Rank], 
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR k1 = ROUND([Fran mature] / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and occupancy
+			VAR RankingList = 
+			    ADDCOLUMNS(
+			        SUMMARIZE(
+			            FILTER(
+			                'School Sys', 
+			                NOT ISBLANK([Fran Occ 12months])
+			            ),
+			            'School Sys'[FMS_SCHOOL_NAME]
+			        ),
+			        "Fran Occ", [Fran Occ 12months]
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList, 
+			            [Fran Occ], 
+			            , 
+			            DESC, 
+			            skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, "High",
+			        Sys_rank > k2, "Low",
+			        "Mid"
+			    )
+			
+			-- Calculate the average occupancy for each category using variables 
+			VAR AvgLow = 
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] > k2 ), 
+			            [Fran Occ] 
+			        )
+			    )
+			
+			VAR AvgHigh = 
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] <= k1 ), 
+			            [Fran Occ] 
+			        )
+			    )
+			
+			VAR AvgMid =
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] > k1 && [Rank] <= k2 ), 
+			            [Fran Occ] 
+			        )
+			    )
+			
+			-- Select the average occupancy based on the category
+			VAR AverageOccupancy = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgLow,
+			        "High", AvgHigh,
+			        "Mid", AvgMid
+			    )
+			
+			RETURN if(ISBLANK(AverageOccupancy),0,AverageOccupancy)
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 98519db8-7ead-4683-9dd3-02bcead8475f
+
+	measure 'Fran occ % Diff System' = [Fran Occ KPI]-[Fran Occ avg System]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 8f6fc41f-f556-41be-8cfe-ce678c76f0ed
+
+	measure 'Fran Occ max value system gauge' =
+			
+			var a = CALCULATE([Fran occ 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			return [Fran mature]-a
+		lineageTag: 094b46dc-4f77-4100-8f60-656d4dcfaf96
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran NPS Rank region Gauge' = ```
+			
+			var selected_region = SELECTEDVALUE(School[region])
+			var region_rank = CALCULATE([Fran NPS 12months Rank],'School Sys'[Region]=selected_region,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			
+			return region_count-region_rank 
+			```
+		lineageTag: ee827c01-e2ba-4aee-922e-cdbba5b7ea88
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran Occ avg Region' = ```
+			
+			VAR selected_region = SELECTEDVALUE(School[Region])
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) -- EDATE (11 months back end of the month)
+			
+			VAR region_count = 
+			    CALCULATE(
+			        COUNT('School Sys'[FMS_SCHOOL_NAME]),
+			        'School Sys'[Accepting Children Date] < Max_date_Rollback,
+			        'School Sys'[Region] = selected_region
+			    )
+			
+			VAR k1 = ROUND(region_count / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and profits
+			VAR RankingList = 
+			    ADDCOLUMNS(
+			        FILTER(
+			            SUMMARIZE(
+			                'School Sys',
+			                'School Sys'[FMS_SCHOOL_NAME]
+			            ),
+			            NOT ISBLANK([Fran Occ 12months])
+			        ),
+			        "Fran Occ", CALCULATE([Fran Occ 12months] ,'School Sys'[Region] = selected_region )
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList,
+			            [Fran Occ],
+			            ,
+			            desc,
+			            Skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school by its rank
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran Occ 12months Rank],
+			        'School Sys'[Region] = selected_region,
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank > k2, "Low",
+			        Sys_rank <= k1, "High",
+			        "Mid"
+			    )
+			
+			-- Calculate the average occupancy for schools in the same category
+			VAR AvgLow = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k2),
+			            [Fran Occ]
+			        )
+			    )
+			
+			VAR AvgHigh = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] <= k1),
+			            [Fran Occ]
+			        )
+			    )
+			
+			VAR AvgMid =
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k1 && [Rank] <= k2),
+			            [Fran Occ]
+			        )
+			    )
+			
+			-- Select the average occupancy based on the category
+			VAR AverageOccupancy = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgLow,
+			        "High", AvgHigh,
+			        "Mid", AvgMid
+			    )
+			
+			RETURN    if(ISBLANK(AverageOccupancy),0,AverageOccupancy)
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: af9accd0-bb86-4ab7-84f7-0b2dfc1dcaa6
+
+	measure 'Fran occ % Diff Region' = [Fran Occ KPI]-[Fran Occ avg Region]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 2bc6d6b0-c2ab-49b9-9e38-247e10c0dd39
+
+	measure 'Fran Occ Format Region' = ```
+			
+			var selected_region = SELECTEDVALUE(School[Region])
+			var Sys_rank = CALCULATE([Fran Occ 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Region]=selected_region)
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			    
+			 VAR k1 = Round(region_count/3,0)
+			 VAR k2 = K1*2
+			
+			    RETURN 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: 2c4b34f5-227d-4dc4-ad9e-996416a52b98
+
+	measure 'Fran NPS Rank market Gauge' = ```
+			
+			var selected_market = SELECTEDVALUE(School[Market])
+			var region_rank = CALCULATE([Fran NPS 12months Rank],'School Sys'[Market]=selected_market,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			
+			return region_count-region_rank 
+			```
+		lineageTag: 28f902d1-36ca-4ee8-9c95-93e8c6e0a966
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran Occ avg Market' = ```
+			
+			VAR selected_Market = SELECTEDVALUE(School[Market])
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) -- EDATE (11 months back end of the month)
+			
+			VAR region_count = 
+			    CALCULATE(
+			        COUNT('School Sys'[FMS_SCHOOL_NAME]),
+			        'School Sys'[Accepting Children Date] < Max_date_Rollback,
+			        'School Sys'[Market] = selected_Market    )
+			
+			VAR k1 = ROUND(region_count / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and profits
+			VAR RankingList = 
+			    ADDCOLUMNS(
+			        FILTER(
+			            SUMMARIZE(
+			                'School Sys',
+			                'School Sys'[FMS_SCHOOL_NAME]
+			            ),
+			            NOT ISBLANK([Fran Occ 12months])
+			        ),
+			        "Fran Occ", CALCULATE([Fran Occ 12months] ,'School Sys'[Market] = selected_market )
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList,
+			            [Fran Occ],
+			            ,
+			            desc,
+			            skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school by its rank
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran Occ 12months Rank],
+			        'School Sys'[Market] = selected_Market,
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank > k2, "Low",
+			        Sys_rank <= k1, "High",
+			        "Mid"
+			    )
+			
+			-- Calculate the average occupancy for schools in the same category
+			VAR AvgLow = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k2),
+			            [Fran Occ]
+			        )
+			    )
+			
+			VAR AvgHigh = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] <= k1),
+			            [Fran Occ]
+			        )
+			    )
+			
+			VAR AvgMid =
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k1 && [Rank] <= k2),
+			            [Fran Occ]
+			        )
+			    )
+			
+			-- Select the average occupancy based on the category
+			VAR AverageOccupancy = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgLow,
+			        "High", AvgHigh,
+			        "Mid", AvgMid
+			    )
+			
+			RETURN  IF(ISBLANK(AverageOccupancy), [Fran Profit], AverageOccupancy)
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: c8f9c14b-2f5d-4463-afa7-7714281db7d2
+
+	measure 'Fran % Diff Market' = [Fran Occ KPI]-[Fran Occ avg Market]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: d2a77c45-ca7b-4909-974e-f92697a65486
+
+	measure 'Fran Occ Format Market' = ```
+			
+			var selected_market= SELECTEDVALUE(School[Market])
+			var Sys_rank = CALCULATE([Fran Occ 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Market]=selected_market)
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var Market_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			      
+			 VAR k1 = Round(Market_count/3,0)
+			 VAR k2 = K1*2
+			
+			    RETURN 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: 6c8f2668-9dc6-43fb-a340-be989e810091
+
+	measure 'Fran Profit 12months' = ```
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature
+			  
+			 var Profit= CALCULATE( sum('Financial Sys'[OP_INCOME_AMT])/sum('Financial Sys'[TOTAL_REVENUE_FOR_MONTH_AMT])
+			    , DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH),'School Sys'[Accepting Children Date]<Max_date_Rollback)
+			return Profit
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 7185f903-b9b4-46af-80ca-05f3ddfa538e
+
+	measure 'Fran Profit max value system gauge' =
+			
+			var a = CALCULATE([Fran profit 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			return [Fran mature]-a
+		lineageTag: 5fe71c41-7a1a-4375-9451-64965a83f645
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran Profit 12months Rank' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        if([Fran Profit 12months]=0,-9999,[Fran Profit 12months]),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: 75c78af8-219f-4755-a5ff-b7422bb44759
+
+	measure 'Fran Profit Rank (System)' =
+			
+			
+			var a = CALCULATE([Fran Profit 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			return  a & " / " &[Fran mature]
+		lineageTag: 53a283d1-7aaa-4eff-b1b2-945710441134
+
+	measure 'Fran Profit avg System' = ```
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) 
+			
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran profit 12months Rank], 
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR k1 = ROUND([Fran mature] / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and profits
+			VAR RankingList = 
+			    ADDCOLUMNS(
+			        SUMMARIZE(
+			            FILTER(
+			                'School Sys', 
+			                NOT ISBLANK([Fran profit 12months])
+			            ),
+			            'School Sys'[FMS_SCHOOL_NAME]
+			        ),
+			        "Fran Profit", [Fran profit 12months]
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList, 
+			            [Fran Profit], 
+			            , 
+			            DESC, 
+			            skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, "High",
+			        Sys_rank > k2, "Low",
+			        "Mid"
+			    )
+			
+			-- Calculate the average profit for each category using variables 
+			VAR AvgLow = 
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] > k2 ), 
+			            [Fran Profit]
+			        )
+			    )
+			
+			VAR AvgHigh = 
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] <= k1 ), 
+			            [Fran Profit]
+			        )
+			    )
+			
+			VAR AvgMid =
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] > k1 && [Rank] <= k2 ), 
+			            [Fran Profit]
+			        )
+			    )
+			
+			-- Select the average profit based on the category
+			VAR AverageProfit = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgLow,
+			        "High", AvgHigh,
+			        "Mid", AvgMid
+			    )
+			
+			RETURN if(ISBLANK(AverageProfit),0,AverageProfit)
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 4d4140bd-53b4-41ea-bc97-f5f34e370c1b
+
+	measure 'Fran profit % Diff System' = [Fran profit]-[Fran Profit avg System]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 34df866c-b4e4-451a-8ad0-eb7f623d543a
+
+	measure 'Fran Profit Format system' = ```
+			
+			var Sys_rank = CALCULATE([Fran Profit 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			    
+			 VAR k1 = Round([Fran mature]/3,0)
+			 VAR k2 = K1*2
+			
+			    RETURN 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: 48bf0695-ea50-4371-a732-8c0e4a6841ad
+
+	measure 'Fran NPS 12months' = ```
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature
+			  
+			 var NPS1= CALCULATE( 
+			    (
+			    (
+			        sum('NPS Sys'[Promoters])/sum('NPS Sys'[Responses])
+			    )-
+			    (
+			        sum('NPS Sys'[Detractors])/sum('NPS Sys'[Responses])
+			    )
+			    )*100, DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH),'School Sys'[Accepting Children Date]<Max_date_Rollback)
+			return NPS1
+			```
+		formatString: 0.0
+		lineageTag: 2d56f34f-669b-4c49-a482-04494433e8e3
+
+	measure 'Fran NPS 12months Rank' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        if([Fran NPS 12months]=0,-9999,[Fran NPS 12months]),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: 3da1468f-9878-45e3-bbfc-e6d5275dfef8
+
+	measure 'Fran NPS Rank (System)' =
+			
+			
+			var a = CALCULATE([Fran nps 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			return a & " / " &[Fran mature]
+		lineageTag: 700713e1-8835-47f8-a40f-e55172fd8513
+
+	measure 'Fran NPS max value system gauge' =
+			
+			var a = CALCULATE([Fran nps 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			return [Fran mature]-a
+		lineageTag: 0bb7ea4a-0ab8-41b4-a90f-8ac3534bcb89
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran NPS avg System' = ```
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) 
+			
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran NPS 12months Rank], 
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR k1 = ROUND([Fran mature] / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and NPS
+			VAR RankingList = 
+			    ADDCOLUMNS(
+			        SUMMARIZE(
+			            FILTER(
+			                'School Sys', 
+			                NOT ISBLANK([Fran NPS 12months])
+			            ),
+			            'School Sys'[FMS_SCHOOL_NAME]
+			        ),
+			        "Fran NPS", [Fran NPS 12months]
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList, 
+			            [Fran NPS], 
+			            , 
+			            DESC, 
+			            Skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, "High",
+			        Sys_rank > k2, "Low",
+			        "Mid"
+			    )
+			
+			-- Calculate the average NPS for each category using variables 
+			VAR AvgLow = 
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] > k2 ), 
+			            [Fran NPS]
+			        )
+			    )
+			
+			VAR AvgHigh = 
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] <= k1 ), 
+			            [Fran NPS]
+			        )
+			    )
+			
+			VAR AvgMid =
+			    CALCULATE (
+			        AVERAGEX ( 
+			            FILTER ( kValues, [Rank] > k1 && [Rank] <= k2 ), 
+			            [Fran NPS]
+			        )
+			    )
+			
+			-- Select the average NPS based on the category
+			VAR AverageNPS = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgLow,
+			        "High", AvgHigh,
+			        "Mid", AvgMid
+			    )
+			
+			RETURN if(ISBLANK(AverageNPS),0,AverageNPS)
+			    
+			```
+		formatString: 0.0
+		lineageTag: c134e2f3-fa25-4f1b-aaa5-e454b211ca0a
+
+	measure 'Fran NPS % Diff System' = [Fran NPS]-[Fran NPS avg System]
+		formatString: 0.0
+		lineageTag: 5388db74-d9b8-4ec8-ab12-0e6ff8815b2f
+
+	measure 'Fran NPS Format system' = ```
+			
+			var Sys_rank = CALCULATE([Fran NPS 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			    
+			 VAR k1 = Round([Fran mature]/3,0)
+			 VAR k2 = K1*2
+			
+			    RETURN 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: e248e2a4-4878-4fbf-b62f-3ac538733ac8
+
+	measure 'Fran NPS Rank (Region)' =
+			
+			var selected_region = SELECTEDVALUE(School[Region])
+			var region_rank = CALCULATE([Fran NPS 12months Rank],'School Sys'[Region]=selected_region,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			
+			return  region_rank & " / " &region_count
+		lineageTag: 906e2b5f-0b8a-4f5b-8396-badc93bdccf6
+
+	measure 'Fran Max value Region Gauge' = ```
+			
+			 var selected_Region= SELECTEDVALUE(School[Region]) 
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_Region)
+			return region_count
+			```
+		lineageTag: 943b9dc9-76d1-40b1-a8d6-fae1e186d535
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran NPS Format Region' = ```
+			
+			var selected_region = SELECTEDVALUE(School[Region])
+			var Sys_rank = CALCULATE([Fran NPS 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Region]=selected_region)
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			    
+			 VAR k1 = Round(region_count/3,0)
+			 VAR k2 = K1*2
+			
+			    RETURN 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: 8e1abe4f-e6b2-4683-9781-2a15d191495d
+
+	measure 'Fran NPS avg Region' = ```
+			
+			VAR selected_Region = SELECTEDVALUE(School[Region])
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) -- 11 months back, end of the month
+			
+			VAR Region_count = 
+			    CALCULATE(
+			        COUNT('School Sys'[FMS_SCHOOL_NAME]),
+			        'School Sys'[Accepting Children Date] < Max_date_Rollback,
+			        'School Sys'[Region] = selected_Region
+			    )
+			
+			VAR k1 = ROUND(Region_count / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and NPS
+			VAR RankingList = 
+			    ADDCOLUMNS(
+			        FILTER(
+			            SUMMARIZE(
+			                'School Sys',
+			                'School Sys'[FMS_SCHOOL_NAME]
+			            ),
+			            NOT ISBLANK([Fran NPS 12months])
+			        ),
+			        "Fran NPS", CALCULATE([Fran NPS 12months],'School Sys'[Region] = selected_Region)
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList,
+			            [Fran NPS],
+			            ,
+			            DESC,
+			            Skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school by its rank
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran NPS 12months Rank],
+			        'School Sys'[Region] = selected_Region,
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank > k2, "Low",
+			        Sys_rank <= k1, "High",
+			        "Mid"
+			    )
+			
+			-- Calculate the NPS for each category using variables 
+			VAR AvgNPSLow = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k2),
+			            [Fran NPS]
+			        )
+			    )
+			
+			VAR AvgNPSHigh = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] <= k1),
+			            [Fran NPS]
+			        )
+			    )
+			
+			VAR AvgNPSMid =
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k1 && [Rank] <= k2),
+			            [Fran NPS]
+			        )
+			    )
+			
+			-- Calculate NPS scores: (Promoters - Detractors) / Total Responses * 100
+			VAR NPSScores = 
+			    (
+			        SUM('NPS Sys'[Promoters]) / SUM('NPS Sys'[Responses]) -
+			        SUM('NPS Sys'[Detractors]) / SUM('NPS Sys'[Responses])
+			    ) * 100
+			
+			-- Select the average NPS based on the category
+			VAR AverageNPS = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgNPSLow,
+			        "High", AvgNPSHigh,
+			        "Mid", AvgNPSMid
+			    )
+			
+			RETURN 
+			    IF(ISBLANK(AverageNPS), [Fran NPS], AverageNPS)
+			```
+		formatString: 0.0
+		lineageTag: 2b1c9ab2-8372-40f0-8778-f0d01248334b
+
+	measure 'Fran NPS % Diff Region' = [Fran NPS]-[Fran NPS avg Region]
+		formatString: 0.0
+		lineageTag: fb6c8bae-42e8-4346-a3ca-f4af14850bf3
+
+	measure 'Fran Max value Market Gauge' = ```
+			
+			 var selected_market = SELECTEDVALUE(School[Market]) 
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			return region_count
+			```
+		lineageTag: 804e29de-cd38-4578-a64c-7788649c4db9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran NPS Rank (Market)' =
+			
+			var selected_market = SELECTEDVALUE(School[Market])
+			var region_rank = CALCULATE([Fran NPS 12months Rank],'School Sys'[Market]=selected_market,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			
+			return  region_rank & " / " &region_count
+		lineageTag: 37cd8573-5744-4a85-a1a4-971cc414aa32
+
+	measure 'Fran NPS Format Market' = ```
+			
+			var selected_market = SELECTEDVALUE(School[Market])
+			var Sys_rank = CALCULATE([Fran NPS 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Market]=selected_market)
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var Market_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			    
+			 VAR k1 = Round(Market_count/3,0)
+			 VAR k2 = K1*2
+			
+			 RETURN 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: 107b5746-0924-4181-ac9f-1c70730b46a9
+
+	measure 'Fran NPS avg Market' = ```
+			
+			VAR selected_market = SELECTEDVALUE(School[Market])
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) -- 11 months back, end of the month
+			
+			VAR market_count = 
+			    CALCULATE(
+			        COUNT('School Sys'[FMS_SCHOOL_NAME]),
+			        'School Sys'[Accepting Children Date] < Max_date_Rollback,
+			        'School Sys'[Market] = selected_market
+			    )
+			
+			VAR k1 = ROUND(market_count / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and NPS
+			VAR RankingList = 
+			    ADDCOLUMNS(
+			        FILTER(
+			            SUMMARIZE(
+			                'School Sys',
+			                'School Sys'[FMS_SCHOOL_NAME]
+			            ),
+			            NOT ISBLANK([Fran NPS 12months])
+			        ),
+			        "Fran NPS", CALCULATE([Fran NPS 12months],'School Sys'[Market] = selected_market)
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList,
+			            [Fran NPS],
+			            ,
+			            DESC,
+			            Skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school by its rank
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran NPS 12months Rank],
+			        'School Sys'[Market] = selected_market,
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank > k2, "Low",
+			        Sys_rank <= k1, "High",
+			        "Mid"
+			    )
+			
+			-- Calculate the NPS for each category using variables 
+			VAR AvgNPSLow = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k2),
+			            [Fran NPS]
+			        )
+			    )
+			
+			VAR AvgNPSHigh = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] <= k1),
+			            [Fran NPS]
+			        )
+			    )
+			
+			VAR AvgNPSMid =
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k1 && [Rank] <= k2),
+			            [Fran NPS]
+			        )
+			    )
+			
+			-- Calculate NPS scores: (Promoters - Detractors) / Total Responses * 100
+			VAR NPSScores = 
+			    (
+			        SUM('NPS Sys'[Promoters]) / SUM('NPS Sys'[Responses]) -
+			        SUM('NPS Sys'[Detractors]) / SUM('NPS Sys'[Responses])
+			    ) * 100
+			
+			-- Select the average NPS based on the category
+			VAR AverageNPS = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgNPSLow,
+			        "High", AvgNPSHigh,
+			        "Mid", AvgNPSMid
+			    )
+			
+			RETURN 
+			    IF(ISBLANK(AverageNPS), [Fran NPS], AverageNPS)
+			```
+		formatString: 0.0
+		lineageTag: e6f83774-cb59-4a18-bacb-2233cb42264c
+
+	measure 'Fran NPS % Diff Market' = [Fran NPS]-[Fran NPS avg Market]
+		formatString: 0.0
+		lineageTag: d1fdcc71-2920-4fd2-a8fd-fd30f018b3ec
+
+	measure 'Fran Occ Rank region Gauge' = ```
+			
+			var selected_region = SELECTEDVALUE(School[region])
+			var region_rank = CALCULATE([Fran Occ 12months Rank],'School Sys'[Region]=selected_region,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			
+			return region_count-region_rank 
+			```
+		lineageTag: 145c771a-5eed-444b-a583-813e2e6857c3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran Profit Rank (Region)' =
+			
+			var selected_region = SELECTEDVALUE(School[Region])
+			var region_rank = CALCULATE([Fran profit 12months Rank],'School Sys'[Region]=selected_region,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			
+			return  region_rank & " / " &region_count
+		lineageTag: 8ca1928a-a051-40b4-a725-a9890f97e546
+
+	measure 'Fran Profit avg Region' = ```
+			
+			VAR selected_region = SELECTEDVALUE(School[Region])
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) -- 11 months back, end of the month
+			
+			VAR region_count = 
+			    CALCULATE(
+			        COUNT('School Sys'[FMS_SCHOOL_NAME]),
+			        'School Sys'[Accepting Children Date] < Max_date_Rollback,
+			        'School Sys'[Region] = selected_region
+			    )
+			
+			VAR k1 = ROUND(region_count / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and profits
+			VAR RankingList = 
+			    ADDCOLUMNS(
+			        FILTER(
+			            SUMMARIZE(
+			                'School Sys',
+			                'School Sys'[FMS_SCHOOL_NAME]
+			            ),
+			            NOT ISBLANK([Fran profit 12months])
+			        ),
+			        "Fran Profit", CALCULATE([Fran profit 12months],'School Sys'[Region] = selected_region)
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList,
+			            [Fran Profit],
+			            ,
+			            desc,
+			            Skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school by its rank
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran profit 12months Rank],
+			        'School Sys'[Region] = selected_region,
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank > k2, "Low",
+			        Sys_rank <= k1, "High",
+			        "Mid"
+			    )
+			
+			-- Calculate the average profit for each category using variables 
+			VAR AvgLow = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k2),
+			            [Fran Profit]
+			        )
+			    )
+			
+			VAR AvgHigh = 
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] <= k1),
+			            [Fran Profit]
+			        )
+			    )
+			
+			VAR AvgMid =
+			    CALCULATE(
+			        AVERAGEX(
+			            FILTER(kValues, [Rank] > k1 && [Rank] <= k2),
+			            [Fran Profit]
+			        )
+			    )
+			
+			-- Select the average profit based on the category
+			VAR AverageProfit = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgLow,
+			        "High", AvgHigh,
+			        "Mid", AvgMid
+			    )
+			
+			RETURN 
+			    if(ISBLANK(AverageProfit),0,AverageProfit)
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: a08e1162-f0c7-4795-889b-a04d4639cddf
+
+	measure 'Fran Profit % Diff Region' = [Fran Profit]-[Fran profit avg Region]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 79b6b5f1-c20f-422b-ac44-9d562e164d2d
+
+	measure 'Fran Profit Format Region' = ```
+			
+			var selected_region = SELECTEDVALUE(School[Region])
+			var Sys_rank = CALCULATE([Fran Profit 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Region]=selected_region)
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			    
+			 VAR k1 = Round(region_count/3,0)
+			 VAR k2 = K1*2
+			
+			    RETURN  
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: c9dab4ee-a249-4394-89a5-dc0027066a1e
+
+	measure 'Fran Occ Rank market Gauge' = ```
+			
+			var selected_market = SELECTEDVALUE(School[Market])
+			var region_rank = CALCULATE([Fran occ 12months Rank],'School Sys'[Market]=selected_market,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			
+			return region_count-region_rank 
+			```
+		lineageTag: a2c2d8b7-255f-4d69-ada2-14b4bdc04e95
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fran Profit Rank (Market)' =
+			
+			var selected_market = SELECTEDVALUE(School[Market])
+			var region_rank = CALCULATE([Fran profit 12months Rank],'School Sys'[Market]=selected_market,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			
+			return region_rank & " / " &region_count
+		lineageTag: 9fc8d3ac-6e7b-41bf-887b-e3609137f9ca
+
+	measure 'Fran Profit Format Market' = ```
+			
+			var selected_market = SELECTEDVALUE(School[Market])
+			var Sys_rank = CALCULATE([Fran profit 12months Rank],TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Market]=selected_market)
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var Market_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			    
+			 VAR k1 = Round(Market_count/3,0)
+			 VAR k2 = K1*2
+			
+			    RETURN 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank <= k1, 1,
+			        Sys_rank > K2, 3,
+			        2
+			    )
+			```
+		formatString: 0
+		lineageTag: 66892ce9-3cb5-420a-9f2e-c5ee3d7d780e
+
+	measure 'Fran profit avg Market' = ```
+			
+			VAR selected_market = SELECTEDVALUE(School[Market])
+			
+			VAR Max_date = MAX('Date'[DATE_ID])
+			VAR Max_date_Rollback = DATE(YEAR(EDATE(Max_date, -29)), MONTH(EDATE(Max_date, -29)), 1) -- EDATE (11 months back end of the month)
+			
+			VAR market_count = 
+			    CALCULATE(
+			        COUNT('School Sys'[FMS_SCHOOL_NAME]),
+			        'School Sys'[Accepting Children Date] < Max_date_Rollback,
+			        'School Sys'[Market] = selected_market
+			    )
+			
+			VAR k1 = ROUND(market_count / 3, 0)
+			VAR k2 = k1 * 2
+			
+			-- Create a summarized table with ranks and profits
+			VAR RankingList = 
+			 ADDCOLUMNS(
+			        FILTER(
+			            SUMMARIZE(
+			                'School Sys',
+			                'School Sys'[FMS_SCHOOL_NAME]
+			            ),
+			            NOT ISBLANK([Fran profit 12months])
+			        ),
+			        "Fran Profit", CALCULATE([Fran profit 12months],'School Sys'[Market] = selected_market)
+			    )
+			
+			VAR kValues = 
+			    ADDCOLUMNS(
+			        RankingList,
+			        "Rank", RANKX(
+			            RankingList,
+			            [Fran Profit],
+			            ,
+			            desc,
+			            Skip
+			        )
+			    )
+			
+			-- Determine the category of the selected school by its rank
+			VAR Sys_rank = 
+			    CALCULATE(
+			        [Fran profit 12months Rank],
+			        'School Sys'[Market] = selected_market,
+			        TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME])
+			    )
+			
+			VAR SelectedCategory = 
+			    SWITCH(
+			        TRUE(),
+			        Sys_rank > k2, "Low",
+			        Sys_rank <= k1, "High",
+			        "Mid"
+			    )
+			
+			-- Calculate the average profit for schools in the same category
+			VAR AvgLow = 
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER ( kValues, [Rank] > k2 ),
+			            [Fran Profit]
+			        )
+			    )
+			
+			VAR AvgHigh = 
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER ( kValues, [Rank] <= k1 ),
+			            [Fran Profit]
+			        )
+			    )
+			
+			VAR AvgMid =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER ( kValues, [Rank] > k1 && [Rank] <= k2 ),
+			            [Fran Profit]
+			        )
+			    )
+			
+			-- Select the average profit based on the category
+			VAR AverageProfit = 
+			    SWITCH(
+			        SelectedCategory,
+			        "Low", AvgLow,
+			        "High", AvgHigh,
+			        "Mid", AvgMid
+			    )
+			
+			RETURN 
+			    IF(ISBLANK(AverageProfit), [Fran Profit], AverageProfit)
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 07b3f6b5-ffaf-4ba8-90a3-d0575530c5f4
+
+	measure 'Fran Profit % Diff Market' = [Fran Profit]-[Fran profit avg Market]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 00f72ec9-b6d8-436d-b9dc-d4b5f7747bb1
+
+	measure 'Fran Text color' = CALCULATE([Fran Overall Rank], TREATAS(VALUES(School[FMS_SCHOOL_NAME]), 'School Sys'[FMS_SCHOOL_NAME]))
+		lineageTag: 80581798-7868-4d2e-83b1-5bb2953e8f70
+
+	measure 'Fran Overall Temp rank' = ROUND(([Fran Profit 12months Rank Detail sys]+[Fran Occ 12Months Rank Detail sys]+[Fran NPS 12months Rank Detail sys])/3,0)
+		formatString: 0
+		lineageTag: 33082317-df72-45d7-8124-54250baec1b3
+
+	measure 'Fran Overall Rank' = ```
+			
+			var rankValue = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number])
+			        )),
+			        [Fran Overall Temp rank],
+			
+			        ,
+			        ASC,
+			        Skip
+			    )
+			VAR suffix = 
+			    SWITCH(
+			        TRUE(),
+			        -- Special case for teens (11, 12, 13)
+			        rankValue IN {11, 12, 13}, "th",
+			        
+			        MOD(rankValue, 10) = 1, "st",
+			        MOD(rankValue, 10) = 2, "nd",
+			        MOD(rankValue, 10) = 3, "rd",
+			        "th"
+			    )
+			RETURN
+			    rankValue & suffix
+			```
+		lineageTag: 40a23750-92f8-468d-8af1-ac2b59126711
+
+	measure 'Fran overall rank Detail' =
+			
+			var rankValue = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number])
+			        )),
+			        [Fran Overall Temp rank],
+			
+			        ,
+			        ASC,
+			        Skip
+			    )
+			Return rankValue
+		formatString: 0
+		lineageTag: 9aa4bf03-3767-4e03-bf6b-b1964b789537
+
+	measure 'Fran Occ 12Months Rank Detail sys' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE([Fran Occ 12months],ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: 9f1772bc-547a-4048-867a-a456ebd2a70d
+
+	measure 'Fran Profit 12months Rank Detail sys' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE(if([Fran Profit 12months]=0,-9999,[Fran Profit 12months]),ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: cdafa42b-9ea4-4c7a-b251-1774dda887c3
+
+	measure 'Fran NPS 12months Rank Detail sys' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE(if([Fran NPS 12months]=0,-9999,[Fran NPS 12months]),ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: 7557d2b7-2af1-4ade-aaba-82e904084f18
+
+	measure 'Fran Profit Rank market Gauge' = ```
+			
+			var selected_market = SELECTEDVALUE(School[Market])
+			var region_rank = CALCULATE([Fran profit 12months Rank],'School Sys'[Market]=selected_market,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Market]=selected_market)
+			
+			return region_count-region_rank 
+			```
+		formatString: 0
+		lineageTag: c97202dc-9e3a-4e86-8bbd-4d0eab7adb34
+
+	measure 'Fran Profit Rank region Gauge' = ```
+			
+			var selected_region = SELECTEDVALUE(School[region])
+			var region_rank = CALCULATE([Fran Profit 12months Rank],'School Sys'[Region]=selected_region,TREATAS(VALUES(School[FMS_SCHOOL_NAME]),'School Sys'[FMS_SCHOOL_NAME]))
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --Mature school
+			
+			 var region_count =  CALCULATE(COUNT('School Sys'[FMS_SCHOOL_NAME]),'School Sys'[Accepting Children Date]<Max_date_Rollback,'School Sys'[Region]=selected_region)
+			
+			return region_count-region_rank 
+			```
+		formatString: 0
+		lineageTag: f7636477-2d71-430d-ae92-ddcc73ca3b70
+
+	measure 'Fran NPS 12months Rank Detail Region' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE(if([Fran NPS 12months]=0,-9999,[Fran NPS 12months]),ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME],'School Sys'[Region])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: 4e339838-cbce-49b4-abce-12faaef2fd28
+
+	measure 'Fran Occ 12Months Rank Detail Region' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE([Fran Occ 12months],ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME],'School Sys'[Region])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			    Return a
+			```
+		formatString: 0
+		lineageTag: c30f677c-e475-4eb8-bd9c-26eb43fa257e
+
+	measure 'Fran Profit 12months Rank Detail Region' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE(if([Fran Profit 12months]=0,-9999,[Fran Profit 12months]),ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME],'School Sys'[Region])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: d4da7113-2b07-45ed-bd8f-ffe252a0d53b
+
+	measure 'Fran Profit 12months Rank Detail Market' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE(if([Fran Profit 12months]=0,-9999,[Fran Profit 12months]),ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME],'School Sys'[Market])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: 5db3b11f-54c4-4f9b-84aa-54b3443bfc8b
+
+	measure 'Fran Occ 12Months Rank Detail Maket' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE([Fran Occ 12months],ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME],'School Sys'[Market])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			    Return a
+			```
+		formatString: 0
+		lineageTag: 12003000-dbad-499e-905f-88190aea9387
+
+	measure 'Fran NPS 12months Rank Detail Market' = ```
+			
+			var a = RANKX(
+			        FILTER(
+			            ALL('School Sys'[FMS_SCHOOL_NAME],'School Sys'[School Number]),
+			            NOT ISBLANK('School Sys'[FMS_SCHOOL_NAME] && NOT ISBLANK('School Sys'[School Number]) 
+			        )),
+			        CALCULATE(if([Fran NPS 12months]=0,-9999,[Fran NPS 12months]),ALLEXCEPT('School Sys','School Sys'[FMS_SCHOOL_NAME],'School Sys'[Market])),
+			        ,
+			        DESC,
+			        Skip
+			    )
+			           Return a
+			```
+		formatString: 0
+		lineageTag: eb669412-eb55-42aa-a9d2-a88f97bd11d0
+
+	measure 'Fran Occ Rank Detail' =
+			
+			SWITCH(SELECTEDVALUE('Switch'[Value1]),
+			1, [Fran Occ 12Months Rank Detail sys],
+			2, [Fran Occ 12Months Rank Detail Region],
+			3, [Fran Occ 12Months Rank Detail Maket])
+		formatString: 0
+		lineageTag: d4219e8e-3bc1-4017-b84a-a2d5b7cfc1fc
+
+	measure 'Fran Profit Rank Detail' =
+			
+			SWITCH(SELECTEDVALUE('Switch'[Value1]),
+			1, [Fran Profit 12Months Rank Detail sys],
+			2, [Fran Profit 12Months Rank Detail Region],
+			3, [Fran Profit 12months Rank Detail Market])
+		formatString: 0
+		lineageTag: 84042435-3796-46ae-b346-12061a910bbd
+
+	measure 'Fran NPS Rank Detail' =
+			
+			SWITCH(SELECTEDVALUE('Switch'[Value2]),
+			"Rank Vs Total System", [Fran NPS 12Months Rank Detail sys],
+			"Rank Vs Total Region", [Fran NPS 12Months Rank Detail Region],
+			"Rank Vs Total Market", [Fran NPS 12Months Rank Detail Market])
+		formatString: 0
+		lineageTag: 49bc0707-7238-4e1c-99b2-142946ad3bb2
+
+	measure 'Fran Mature Ind sys' = ```
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -29)),month(EDATE(Max_date, -29)),1) --EDATE (11 month back end of the month)
+			 RETURN  if(SELECTEDVALUE('School Sys'[Accepting Children Date])<Max_date_Rollback,1,0)
+			```
+		formatString: 0
+		lineageTag: 1dcacb7c-1963-4ec7-923f-3b5f3e556923
+
+	measure 'Fran text detail page' = ```
+			
+			 var Max_date = max('Date'[DATE_ID])
+			 var Max_date_Rollback = date(year(EDATE(Max_date, -11)),month(EDATE(Max_date, -11)),1) --EDATE (11 month back end of the month)
+			return FORMAT(Max_date_Rollback,"MMM - YYYY") 
+			
+			```
+		lineageTag: 4835ade4-972f-4092-9ea2-273561bfd271
+
+	measure 'Fran Selectedmonth' = ```
+			
+			VAR selected_month = SELECTEDVALUE('Date'[Month - Year])
+			VAR b = selected_month 
+			return b
+			```
+		lineageTag: da5b6ba7-2a4b-419f-ab19-45ed381d9caf
+
+	measure 'Fran State RLS' = If(SELECTEDVALUE('School Sys'[State])in VALUES(School[State]), 1,0)
+		formatString: 0
+		lineageTag: e88f2527-415f-45bb-bedd-fe6ffc6323fd
+
+	measure 'Fran Region RLS' = If(SELECTEDVALUE('School Sys'[Region])in VALUES(School[Region]), 1,0)
+		formatString: 0
+		lineageTag: bb428a8e-461e-4514-956e-ac502ad9d0c6
+
+	measure 'Fran Market RLS' = If(SELECTEDVALUE('School Sys'[Market])in VALUES(School[Market]), 1,0)
+		formatString: 0
+		lineageTag: 7194c4c7-5672-4b46-91b2-581bc2ac7784
+
+	measure 'Hide slicer' =
+			
+			var a=USERPRINCIPALNAME()
+			var c= SELECTEDVALUE(RLS[FC Email])
+			var b= if(a=c,1,0)
+			return b
+		formatString: 0
+		lineageTag: e765d679-67a1-4ef7-93af-0c06989844b5
+
+	measure 'Fran CoE Occ' = ```
+			
+			 var occ = CALCULATE(AVERAGE('FTE'[weekly_occupancy]), DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH),NOT(ISBLANK(School[CoE.CRM School Number])),all(School[FMS_SCHOOL_NAME]))+0
+			 return occ
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: da8125c2-3ade-4306-871c-539e439354fe
+
+	measure 'Fran CoE Profit' = ```
+			
+			 var occ = CALCULATE(sum(Financial[OP_INCOME_AMT])/sum(Financial[TOTAL_REVENUE_FOR_MONTH_AMT]), DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH),NOT(ISBLANK(School[CoE.CRM School Number])),all(School[FMS_SCHOOL_NAME]))+0
+			 return occ
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: a47b222f-efcb-4089-8a79-86443f86083e
+
+	measure 'Fran CoE NPS' = ```
+			
+			var NPS_Val = 
+			 Calculate(
+			    (
+			        sum('NPS'[Promoters])/sum(NPS[Responses])
+			    )-
+			    (
+			        sum(NPS[Detractors])/sum(NPS[Responses])
+			    )
+			    , DATESINPERIOD('Date'[DATE_ID],max('Date'[DATE_ID]),-12,MONTH),
+			    NOT(ISBLANK(School[CoE.CRM School Number])),all(School[FMS_SCHOOL_NAME]))+0
+			 return NPS_Val*100
+			```
+		formatString: 0.0
+		lineageTag: 6e2f1ea3-4962-493e-a3cd-e62761d2db89
+
+	measure 'Fran CoE Occ diff' = [Fran Occ KPI]-[Fran CoE Occ]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: e872aaba-b93d-4efa-852e-de11c7bd444d
+
+	measure 'Fran CoE Profit diff' = [Fran Profit]-[Fran CoE Profit]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: f243b585-0544-4be5-94f1-8ff4cf0466f2
+
+	measure 'Fran CoE NPS diff' = [Fran NPS]-[Fran CoE NPS]
+		formatString: 0.0
+		lineageTag: fe188265-e763-4b78-8904-4f5441e54274
+
+	measure DefaultSlicerValue =
+			
+			VAR CurrentUser =USERPRINCIPALNAME() --for email-based RLS
+			RETURN
+			MAXX(
+			FILTER(
+			'RLS',
+			'RLS'[FC Email_updated] = CurrentUser
+			),
+			'RLS'[Default School]
+			)
+		lineageTag: b6755da2-e3e2-4486-adc4-c371fd045f20
+
+	measure ShowDataForUser = ```
+			
+			    VAR SelectedSchool = MAX('School'[FMS_School_Name])
+			    RETURN
+			    IF(
+			        SelectedSchool = [DefaultSlicerValue],
+			        1,
+			        0
+			    )
+			    
+			```
+		formatString: 0
+		lineageTag: 9984a1b6-7815-4143-a922-7f8d4233ae47
+
+	measure SVGMeasure = ```
+			"data:image/svg+xml;utf8,<svg width='200' height='200' xmlns='http://www.w3.org/2000/svg'><style>.dropdown { font-family: Arial, sans-serif; font-size: 14px; fill: #333; }</style><rect width='200' height='200' fill='#f9f9f9' /><text x='10' y='20' class='dropdown'>Dropdown Slicer</text><rect x='10' y='30' width='180' height='30' fill='#fff' stroke='#ccc' /><text x='20' y='50' class='dropdown'>Option 1</text><text x='20' y='80' class='dropdown'>Option 2</text><text x='20' y='110' class='dropdown'>Option 3</text></svg>"
+			
+			```
+		lineageTag: 827b951a-fff8-403d-97bc-2f1e0f37798c
+		dataCategory: ImageUrl
+
+	column Column
+		isHidden
+		formatString: 0
+		lineageTag: fe0a983f-370d-4609-9e53-ef22debc3641
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Column]
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Measure Table-f975c561-d1c3-45cf-a5d5-2896fbbd4994' = calculated
+		mode: import
+		source = Row("Column", BLANK())
+
+	annotation PBI_Id = 15f35f7cf1db44e59343836e1a100e03
+
+	annotation 436ba87b-9c83-4389-a31b-ebd06a36be98 = {"Expression":""}
+

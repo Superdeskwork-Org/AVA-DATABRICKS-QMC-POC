@@ -1,0 +1,77 @@
+table 'FTE Sys'
+	lineageTag: 33a78b8c-145f-4ec1-b940-7b85c32f354b
+
+	column number
+		dataType: int64
+		formatString: 0
+		lineageTag: 5009aed2-6718-43dc-99f9-c660f1407ba6
+		summarizeBy: none
+		sourceColumn: number
+
+		annotation SummarizationSetBy = Automatic
+
+	column week_ending_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 444f10ff-c9d8-4684-8292-273faba89d11
+		summarizeBy: none
+		sourceColumn: week_ending_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column MATHFTE
+		dataType: double
+		lineageTag: d7818df9-4445-4592-848e-76d02fe7d3cc
+		summarizeBy: sum
+		sourceColumn: MATHFTE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TOTALFTES
+		dataType: double
+		lineageTag: 2a6774ca-c3ec-4fe0-9be3-4921ee8a0e32
+		summarizeBy: sum
+		sourceColumn: TOTALFTES
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CAPACITY
+		dataType: double
+		lineageTag: 3377b3a1-3598-496e-a53f-9494b7d9afef
+		summarizeBy: sum
+		sourceColumn: CAPACITY
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column weekly_occupancy = DIVIDE('FTE Sys'[MATHFTE],'FTE Sys'[CAPACITY],BLANK())
+		lineageTag: 98888108-ef12-4ca1-bfde-3050818e4656
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'FTE Sys' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw"),
+				    WORK_WEEKLY_FTE_VW = Source{[Schema="WORK",Item="WEEKLY_FTE_VW"]}[Data],
+				    #"Removed Columns" = Table.RemoveColumns(WORK_WEEKLY_FTE_VW,{"name", "school", "state", "marketing_region", "market", "open date"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Removed Columns",{{"week_ending_date", type date}, {"number", Int64.Type}}),
+				    #"Removed Columns1" = Table.RemoveColumns(#"Changed Type",{"ATTENDINGSTUDENTS", "MATHMATICALFTESTARTS", "MATHMATICALFTEDROPS", "ABSENT STUDENTS", "MATH LOST FTE"})
+				in
+				    #"Removed Columns1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

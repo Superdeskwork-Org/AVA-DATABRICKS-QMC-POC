@@ -1,0 +1,31 @@
+table Switch
+	lineageTag: b780abf1-454f-4d23-ad6e-f5c9751fd212
+
+	column Value1
+		formatString: 0
+		lineageTag: a7c12804-3875-4ba0-bdef-88edb36efd91
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Value1]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value2
+		lineageTag: 8234b6e6-393e-41f9-8de2-26f94eedef2f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Value2]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Switch = calculated
+		mode: import
+		source =
+				{
+				    (1,"Rank Vs Total System"),
+				    (2,"Rank Vs Total Region"),
+				    (3,"Rank Vs Total Market")
+				}
+
+	annotation PBI_Id = 2d79261890fa4ac99d6b6ea5dbc38285
+

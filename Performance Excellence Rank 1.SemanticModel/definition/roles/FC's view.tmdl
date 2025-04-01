@@ -1,0 +1,7 @@
+role 'FC''s view'
+	modelPermission: read
+
+	tablePermission RLS = [FC Email_Updated]=userprincipalname()
+
+	annotation PBI_Id = 3d8f0958ad584a7783c68ec1c5c0482b
+

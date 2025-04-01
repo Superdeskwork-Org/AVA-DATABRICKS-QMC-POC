@@ -1,0 +1,5 @@
+role 'All School View'
+	modelPermission: read
+
+	annotation PBI_Id = b097431bdbb84ed494727b7195d76dca
+

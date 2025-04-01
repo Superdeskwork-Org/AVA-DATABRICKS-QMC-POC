@@ -1,0 +1,56 @@
+table 'Refresh Alert'
+	lineageTag: 1225ce41-382b-4c01-bc60-33be6a1713bf
+
+	column Date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 27138218-25ef-4ec5-b53e-e5b40cea3d0b
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column UTC
+		dataType: dateTime
+		isNullable: false
+		formatString: General Date
+		sourceProviderType: datetime
+		lineageTag: c61c630c-4023-4422-98ba-82771fbfa872
+		summarizeBy: none
+		sourceColumn: UTC
+
+		annotation SummarizationSetBy = Automatic
+
+	column EST
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetimeoffset
+		lineageTag: a32c697f-6822-4973-82b3-c738f5e2bd0a
+		summarizeBy: none
+		sourceColumn: EST
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATE_REFRESH
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 64f2ab2f-1c79-48f5-b37d-791ffbfa0036
+		summarizeBy: none
+		sourceColumn: DATE_REFRESH
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Refresh Alert' = m
+		mode: directQuery
+		source =
+				let
+				    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw", [Query="SELECT#(lf)    CAST(Date_DT AS DATE) AS Date,#(lf)    GETDATE() AS UTC,#(lf)    CONVERT(datetime, GETDATE()) AT TIME ZONE 'UTC' AT TIME ZONE 'Eastern Standard Time' AS EST,#(lf)    CASE#(lf)        WHEN CAST(CONVERT(datetime, GETDATE()) AT TIME ZONE 'UTC' AT TIME ZONE 'Eastern Standard Time' AS TIME) < '06:15:00'#(lf)        THEN DATEADD(day, -1, CAST(GETDATE() AS DATE))#(lf)        ELSE CAST(GETDATE() AS DATE)#(lf)    END AS DATE_REFRESH#(lf)FROM#(lf)    Work.Dim_Date#(lf)WHERE#(lf)    CAST(Date_DT AS DATE) = CAST(GETDATE() AS DATE);"])
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

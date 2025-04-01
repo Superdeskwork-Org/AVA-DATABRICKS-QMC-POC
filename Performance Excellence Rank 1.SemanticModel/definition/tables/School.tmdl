@@ -1,0 +1,296 @@
+table School
+	lineageTag: d08edb7e-6d28-4dce-a6b4-7392494ee60b
+
+	column 'School SK'
+		dataType: int64
+		formatString: 0
+		lineageTag: a2edb196-bf20-4b1b-8c69-da8a102d9915
+		summarizeBy: sum
+		sourceColumn: School SK
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'School Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 34d584ef-689f-44ae-b75f-8ac8d9de971e
+		summarizeBy: none
+		sourceColumn: School Number
+
+		annotation SummarizationSetBy = User
+
+	column 'School FMS ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 9ecab52c-7e19-4422-88b0-3922add0d7e4
+		summarizeBy: none
+		sourceColumn: School FMS ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Account Type'
+		dataType: string
+		lineageTag: 2b32cdd3-8f27-4972-a689-efcd44eaddc4
+		summarizeBy: none
+		sourceColumn: Account Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'School Name'
+		dataType: string
+		lineageTag: b08ab98f-da66-4e8e-9a72-1bee4758b8cd
+		summarizeBy: none
+		sourceColumn: School Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column State
+		dataType: string
+		lineageTag: 896c1c9b-503a-4f7c-b3ab-c86d7b2e3bf0
+		summarizeBy: none
+		sourceColumn: State
+
+		annotation SummarizationSetBy = Automatic
+
+	column Market
+		dataType: string
+		lineageTag: 466fd298-dc70-4374-be1b-e2121f926bd6
+		summarizeBy: none
+		sourceColumn: Market
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Accepting Children Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 0cc5ce35-c985-4a81-a4e3-97a1e0ef5a65
+		summarizeBy: none
+		sourceColumn: Accepting Children Date
+
+		variation Variation
+			isDefault
+			relationship: 26c5e32a-bce8-41f5-99c1-3de21662e6db
+			defaultHierarchy: LocalDateTable_10b04588-4bdc-48bc-9139-503e134ea862.'Date Hierarchy'
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'SCD End Date'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 348c1b6b-a240-439b-a673-06d6d80012ff
+		summarizeBy: none
+		sourceColumn: SCD End Date
+
+		variation Variation
+			isDefault
+			relationship: ccd83fce-b224-4ee9-85b4-f49178515f7b
+			defaultHierarchy: LocalDateTable_d51f6acf-17de-4412-8577-b041d5b9ab36.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column FMS_SCHOOL_NAME
+		dataType: string
+		lineageTag: 9cea2aa6-1d7d-49f4-9f60-6cf7f0b39ee8
+		summarizeBy: none
+		sourceColumn: FMS_SCHOOL_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column IS_TEST_SCHOOL_IND
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 61062040-9e5a-4568-8bfb-9e32722e8d99
+		summarizeBy: none
+		sourceColumn: IS_TEST_SCHOOL_IND
+
+		annotation SummarizationSetBy = Automatic
+
+	column FRANCHISE_OWNER
+		dataType: string
+		lineageTag: 2221fa54-8a4d-4412-b9c4-21d963612aa8
+		summarizeBy: none
+		sourceColumn: FRANCHISE_OWNER
+
+		annotation SummarizationSetBy = Automatic
+
+	column FRANCHISE_NAME
+		dataType: string
+		lineageTag: f0ae5297-42a4-4322-9291-3a096ee4176e
+		summarizeBy: none
+		sourceColumn: FRANCHISE_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column MATURE_SCHOOL_IND
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 07055280-f8f4-41d3-9b9e-b19096309543
+		summarizeBy: none
+		sourceColumn: MATURE_SCHOOL_IND
+
+		annotation SummarizationSetBy = Automatic
+
+	column AcceptingChildrenDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 43af1b75-72cf-40c0-a8ff-3817c9b63c0e
+		summarizeBy: none
+		sourceColumn: AcceptingChildrenDate
+
+		variation Variation
+			isDefault
+			relationship: 775d9eec-d642-42bc-95d0-3d6e9e9ee1f9
+			defaultHierarchy: LocalDateTable_9dcb4979-f030-4acb-8259-2628a981c69d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'School Number Slicer'
+		dataType: string
+		lineageTag: b1b06168-6862-4ff1-90de-ec9b08a7b0e9
+		summarizeBy: none
+		sourceColumn: School Number Slicer
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'School Filter'
+		dataType: string
+		lineageTag: 83055b52-4728-481b-b732-90c6c956c841
+		summarizeBy: none
+		sourceColumn: School Filter
+
+		annotation SummarizationSetBy = Automatic
+
+	column Days_Open
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 313533d2-e4f4-4908-b5b5-b6a4c2951df5
+		summarizeBy: none
+		sourceColumn: Days_Open
+
+		variation Variation
+			isDefault
+			relationship: b5c6eaab-3d8f-4f23-a3f3-c88ae7479aeb
+			defaultHierarchy: LocalDateTable_1933dcdf-7fcf-478b-88ef-c4e3d8cfa464.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Cohort
+		dataType: string
+		lineageTag: 46b5922b-49de-4c1e-82ab-8b87e88b292b
+		summarizeBy: none
+		sourceColumn: Cohort
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region =
+			
+			if( 'School'[State] in {"AR","IA","IL","IN","KS","KY","MI","MN","MO","ND","NE","OH","WI","OK"}  ,"Midwest",
+			if('School'[State] in {"CT","DE","MA","NH","NJ","NY","PA","RI"}, "Northeast",
+			if('School'[State] in {"CA","CO","ID","NV","OR","WA","AZ","TX"}, "West",
+			if('School'[State] in {"DC","FL","GA","MD","NC","SC","TN","VA"}, "Southeast"))))
+		lineageTag: db3b3c82-3b68-4f3e-bd26-bacb6aab0e79
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'WORK DIM_SCHOOL_VW (2).SCHOOL_NUMBER'
+		dataType: int64
+		formatString: 0
+		lineageTag: 6b139135-7602-4775-b2ac-b58cc96fb70f
+		summarizeBy: sum
+		sourceColumn: WORK DIM_SCHOOL_VW (2).SCHOOL_NUMBER
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'WORK DIM_SCHOOL_VW (2).FRANCHISE_OWNER'
+		dataType: string
+		lineageTag: be142a5f-330a-41d0-b030-b6b5e0eae3fc
+		summarizeBy: none
+		sourceColumn: WORK DIM_SCHOOL_VW (2).FRANCHISE_OWNER
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'FMS name' = 'School'[School Name] & ", " &'School'[State]
+		lineageTag: 466cef46-7396-4e76-8d26-63b1d2d3636e
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column Rank_no
+		dataType: int64
+		formatString: 0
+		lineageTag: 7a8a8c08-a8d0-4645-b49e-0e6f7c2fd83a
+		summarizeBy: sum
+		sourceColumn: Rank_no
+
+		annotation SummarizationSetBy = Automatic
+
+	column CRM_SCHOOL_NUMBER
+		dataType: string
+		lineageTag: 4a9e99b4-a712-463f-b382-94791b8979b5
+		summarizeBy: none
+		sourceColumn: CRM_SCHOOL_NUMBER
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'CoE.CRM School Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 7f568805-54b3-4b10-9260-9c624b4f7b75
+		summarizeBy: sum
+		sourceColumn: CoE.CRM School Number
+
+		annotation SummarizationSetBy = Automatic
+
+	partition School-2cf25eab-6b82-48a3-b84f-fda86b93a1ff = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw", [Query="#(lf)#(lf)select * from#(lf)(#(lf)select  *,RANK () OVER ( partition by school_fms_id#(lf)ORDER BY last_sale_dt desc#(lf)) AS Rank_no #(lf)from#(lf)work.dim_School scl#(lf)where #(lf)accepting_children_dt <=getdate() and#(lf)--is_test_school_ind=1 and#(lf)scd_end_dt is null and #(lf)IS_ACTIVE_IND = 1#(lf)and crm_status in ('Active','Construction')#(lf)and fms_school_name is not null#(lf))as base#(lf)where rank_no=1#(lf)"]),
+				    #"Filtered Rows3" = Table.SelectRows(Source, each ([CRM_STATUS] = "Active" or [CRM_STATUS] = "Construction") and ([IS_ACTIVE_IND] = true)),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows3",{{"POSTAL_CODE", Int64.Type}, {"ACCEPTING_CHILDREN_DT", type date}, {"LEASE_PURCHASE_DT", type date}, {"ORIGINAL_PROJECTED_TWP_APPROVAL_DT", type date}, {"TWP_PROJECTED_SITE_PLAN_APPROVAL_DT", type date}, {"ACTUAL_TOWNSHIP_APPROVAL_DT", type date}, {"ORIGINAL_PROJECTED_BUILDING_PERMIT_DT", type date}, {"PROJECTED_BUILDING_PERMIT_DT", type date}, {"ACTUAL_BUILDING_PERMIT_DT", type date}, {"ORIGINAL_PROJECTED_CONSTRUCTION_START_DT", type date}, {"PROJECTED_CONSTRUCTION_START_DT", type date}, {"CONSTRUCTION_START_DT", type date}, {"ORIGINAL_CO_DT", type date}, {"TARGET_CO_DT", type date}, {"CO_DT", type date}, {"ORIGINAL_PROJECTED_LICENSE_DT", type date}, {"CURRENT_PROJECTED_LICENSE_DT", type date}, {"LICENSE_DT", type date}, {"PROJECTED_ACCEPTING_CHILDREN_DT", type date}, {"LAST_SALE_DT", type date}, {"LAST_RELOCATED_DT", type date}, {"SCHOOL_CLOSED_DT", type date}}),
+				    #"Replaced Value" = Table.ReplaceValue(#"Changed Type",null,"N/A",Replacer.ReplaceValue,{"REGION"}),
+				    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value",null,"N/A",Replacer.ReplaceValue,{"CITY"}),
+				    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1",null,"N/A",Replacer.ReplaceValue,{"CRM_STATUS"}),
+				    #"Duplicated Column" = Table.DuplicateColumn(#"Replaced Value2", "ACCEPTING_CHILDREN_DT", "ACCEPTING_CHILDREN_DT - Copy"),
+				    #"Renamed Columns" = Table.RenameColumns(#"Duplicated Column",{{"ACCEPTING_CHILDREN_DT - Copy", "AcceptingChildrenDate"}}),
+				    #"Extracted Date" = Table.TransformColumns(#"Renamed Columns",{}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Extracted Date",{{"AcceptingChildrenDate", type date}, {"ACCEPTING_CHILDREN_DT", type date}}),
+				    #"Extracted Date1" = Table.TransformColumns(#"Changed Type1",{}),
+				    #"Changed Type2" = Table.TransformColumnTypes(#"Extracted Date1",{{"ACCEPTING_CHILDREN_DT", type date}}),
+				    #"Duplicated Column1" = Table.DuplicateColumn(#"Changed Type2", "SCHOOL_NUMBER", "SCHOOL_No._Slicer "),
+				    #"Changed Type3" = Table.TransformColumnTypes(#"Duplicated Column1",{{"SCHOOL_No._Slicer ", type text}}),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Changed Type3",{{"SCHOOL_NUMBER", "School Number"}, {"CRM_SCHOOL_NAME", "School Name"}, {"ADVERTISING_NAME", "School Advertising Name"}, {"ADDRESS_LINE1", "Street Address"}, {"ADDRESS_LINE2", "Street Address 2"}, {"CITY", "City"}, {"REGION", "State"}, {"REGION_NUMBER", "Market"}, {"POSTAL_CODE", "Zip Code"}, {"LONGITUDE", "Longitude"}, {"LATITUDE", "Latitude"}, {"LEASE_PURCHASE_DT", "Lease/Purchase Date"}, {"ORIGINAL_PROJECTED_TWP_APPROVAL_DT", "Original Projected Twp Approval Date"}, {"TWP_PROJECTED_SITE_PLAN_APPROVAL_DT", "Current Projected Twp Approval Date"}, {"ACTUAL_TOWNSHIP_APPROVAL_DT", "Actual Township Approval Date"}, {"ORIGINAL_PROJECTED_BUILDING_PERMIT_DT", "Original Projected Building Permit Date"}, {"PROJECTED_BUILDING_PERMIT_DT", "Current Projected Building Permit Date"}, {"ACTUAL_BUILDING_PERMIT_DT", "Actual Building Permit Date"}, {"ORIGINAL_PROJECTED_CONSTRUCTION_START_DT", "Original Projected Construction Start Date"}, {"PROJECTED_CONSTRUCTION_START_DT", "Current Projected Construction Start Date"}, {"CONSTRUCTION_START_DT", "Actual Construction Start Date"}, {"ORIGINAL_CO_DT", "Original Projected CO Date"}, {"TARGET_CO_DT", "Current Projected CO Date"}, {"CO_DT", "Actual CO Date"}, {"ORIGINAL_PROJECTED_LICENSE_DT", "Original Projected License Date"}, {"CURRENT_PROJECTED_LICENSE_DT", "Current Projected License Date"}, {"LICENSE_DT", "Actual License Date"}, {"PROJECTED_ACCEPTING_CHILDREN_DT", "Projected Accepting Children Date"}, {"ACCEPTING_CHILDREN_DT", "Accepting Children Date"}, {"LAST_SALE_DT", "Transfer Date"}, {"LAST_RELOCATED_DT", "Relocation Date"}, {"SCHOOL_CLOSED_DT", "Closed Date"}, {"CRM_STATUS", "Current status of the school"}, {"SCHOOL_FMS_ID", "School FMS ID"}}),
+				    #"Renamed Columns2" = Table.RenameColumns(#"Renamed Columns1",{{"FMS_SCHOOL_NUMBER", "School FMS Number"}, {"SCHOOL_SK", "School SK"}, {"SCD_START_DT", "SCD Start Date"}, {"SCD_END_DT", "SCD End Date"}, {"SCHOOL_No._Slicer ", "School Number Slicer"}}),
+				    #"Renamed Columns3" = Table.RenameColumns(#"Renamed Columns2",{{"Current status of the school", "Account Type"}}),
+				    #"Replaced Value3" = Table.ReplaceValue(#"Renamed Columns3",#date(1900, 1, 1),null,Replacer.ReplaceValue,{"Actual Building Permit Date"}),
+				    #"Changed Type4" = Table.TransformColumnTypes(#"Replaced Value3",{{"SCD Start Date", type date}}),
+				    #"Renamed Columns5" = Table.RenameColumns(#"Changed Type4",{{"IS_ACTIVE_IND", "DW Active IND"}}),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Renamed Columns5",{"School SK", "School Number", "School FMS ID", "School FMS Number", "Account Type", "School Name", "School Advertising Name", "Street Address", "Street Address 2", "City", "Market", "State", "Zip Code", "Longitude", "Latitude", "Lease/Purchase Date", "Original Projected Twp Approval Date", "Current Projected Twp Approval Date", "Actual Township Approval Date", "Original Projected Building Permit Date", "Current Projected Building Permit Date", "Actual Building Permit Date", "Original Projected Construction Start Date", "Current Projected Construction Start Date", "Actual Construction Start Date", "Original Projected CO Date", "Current Projected CO Date", "Actual CO Date", "Original Projected License Date", "Current Projected License Date", "Actual License Date", "Projected Accepting Children Date", "Accepting Children Date", "Transfer Date", "Relocation Date", "Closed Date", "DW Active IND", "SCD Start Date", "SCD End Date", "School Number Slicer"}),
+				    #"Renamed Columns6" = Table.RenameColumns(#"Reordered Columns",{{"SCHOOL_CRM_ID", "School CRM ID"}}),
+				    #"Inserted Merged Column" = Table.AddColumn(#"Renamed Columns6", "Merged", each Text.Combine({[School Name], " - ", [State]}), type text),
+				    #"Renamed Columns4" = Table.RenameColumns(#"Inserted Merged Column",{{"Merged", "School Filter"}}),
+				    #"Changed Type5" = Table.TransformColumnTypes(#"Renamed Columns4",{{"AcceptingChildrenDate", type datetime}}),
+				    #"Added Custom" = Table.AddColumn(#"Changed Type5", "Days_Open", each Date.AddMonths(DateTime.LocalNow(), -18)),
+				    #"Changed Type6" = Table.TransformColumnTypes(#"Added Custom",{{"Days_Open", type date}}),
+				    #"Added Conditional Column" = Table.AddColumn(#"Changed Type6", "Cohort", each if [Accepting Children Date] <= [Days_Open] then "More than 18 months" else "Less than 18 months"),
+				    #"Filtered Rows" = Table.SelectRows(#"Added Conditional Column", each ([AcceptingChildrenDate] <> null) ),
+				    #"Merged Queries" = Table.NestedJoin(#"Filtered Rows", {"School SK"}, #"WORK DIM_SCHOOL_VW (2)", {"SCHOOL_SK"}, "WORK DIM_SCHOOL_VW (2)", JoinKind.LeftOuter),
+				    #"Expanded WORK DIM_SCHOOL_VW (2)" = Table.ExpandTableColumn(#"Merged Queries", "WORK DIM_SCHOOL_VW (2)", {"SCHOOL_NUMBER", "FRANCHISE_OWNER"}, {"WORK DIM_SCHOOL_VW (2).SCHOOL_NUMBER", "WORK DIM_SCHOOL_VW (2).FRANCHISE_OWNER"}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Expanded WORK DIM_SCHOOL_VW (2)",{"School CRM ID", "ACCOUNT_SK", "School FMS Number", "School Advertising Name", "Street Address", "Street Address 2", "City", "COUNTRY", "Zip Code", "Longitude", "Latitude", "Lease/Purchase Date", "Original Projected Twp Approval Date", "Current Projected Twp Approval Date", "Actual Township Approval Date", "Original Projected Building Permit Date", "Current Projected Building Permit Date", "Actual Building Permit Date", "Original Projected Construction Start Date", "Current Projected Construction Start Date", "Actual Construction Start Date", "Original Projected CO Date", "Current Projected CO Date", "Actual CO Date", "Original Projected License Date", "Current Projected License Date", "Actual License Date", "FTE_CAPACITY_VAL", "FOOD_SERV_STATUS", "MIGRATION_DT", "CERTIFICATE_OF_OCCUPANCY_DT", "IS_ACCREDITED_IND", "Projected Accepting Children Date", "ENABLE_ELEMENTARY_SCHOOL_SUPPORT_IND", "IS_SAEPIO_SCHOOL_IND", "IS_CPAA_SCHOOL_IND", "DEVELOPMENT_STAGE", "IS_TS_GOLD_SCHOOL_IND", "IS_SEGMENTATION_SCHOOL_IND", "CRM_RECORD_CREATED_ON_DT", "Transfer Date", "Relocation Date", "Closed Date", "FMS_STATUS", "CORE_FTE_CAPACITY_VAL", "DW Active IND", "IS_UPDATE_IND", "DW_CREATE_DT", "DW_UPDATE_DT", "SCD Start Date", "BATCH_ID", "CRM_STATUS_CODE"}),
+				    #"Merged Queries1" = Table.NestedJoin(#"Removed Columns", {"School Number"}, CoE, {"CRM School Number"}, "CoE", JoinKind.LeftOuter),
+				    #"Expanded CoE" = Table.ExpandTableColumn(#"Merged Queries1", "CoE", {"CRM School Number"}, {"CoE.CRM School Number"}),
+				    #"Filtered Rows1" = Table.SelectRows(#"Expanded CoE", each ([IS_TEST_SCHOOL_IND] = false))
+				in
+				    #"Filtered Rows1"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

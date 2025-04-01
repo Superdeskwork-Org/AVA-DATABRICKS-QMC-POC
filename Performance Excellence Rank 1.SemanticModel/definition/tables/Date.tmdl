@@ -1,0 +1,111 @@
+table Date
+	lineageTag: 0daecf4d-9789-4840-ac52-ac914a8d7516
+	dataCategory: Time
+
+	column DATE_SK
+		dataType: int64
+		formatString: 0
+		lineageTag: 7d308467-e75d-4b4f-9fa9-0afb1bbdfaf8
+		summarizeBy: sum
+		sourceColumn: DATE_SK
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATE_ID
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: c4a49014-ba6a-4b88-9e84-c8ae7b0ce963
+		summarizeBy: none
+		sourceColumn: DATE_ID
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column DATE_ID_D
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 34cfc2e8-01dc-406e-a681-51b1cf26fbd5
+		summarizeBy: none
+		sourceColumn: DATE_ID_D
+
+		annotation SummarizationSetBy = Automatic
+
+	column MONTH
+		dataType: int64
+		formatString: 0
+		lineageTag: a1c504f7-a112-4d3c-bf5c-b3c6f2cc231b
+		summarizeBy: none
+		sourceColumn: MONTH
+
+		annotation SummarizationSetBy = User
+
+	column MONTH_NAME
+		dataType: string
+		lineageTag: a09d2228-4a70-4609-b1b9-b2d332ec6695
+		summarizeBy: none
+		sourceColumn: MONTH_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column YEAR
+		dataType: int64
+		formatString: 0
+		lineageTag: 4c503702-2a6c-4511-9e30-71bb347db2ec
+		summarizeBy: none
+		sourceColumn: YEAR
+
+		annotation SummarizationSetBy = User
+
+	column Upto_Today = if('Date'[DATE_ID]<=TODAY(),"yes","no")
+		lineageTag: 3ee7cafd-598b-410e-875a-6ea25b0bac59
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month - Year' = FORMAT('Date'[DATE_ID],"MMM - YYYY")
+		lineageTag: 1a76c596-a546-49aa-a6d9-966ff63bd4ad
+		summarizeBy: none
+		sortByColumn: Sort
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sorting = FORMAT('Date'[DATE_ID],"YYYYMM")
+		lineageTag: 7ec56a39-727e-49bb-ac5b-69d1b9b65202
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sort = FORMAT('Date'[DATE_ID],"YYYYMM")
+		dataType: int64
+		formatString: 0
+		lineageTag: 31c92f33-43a3-4cbd-a9ae-d32aec504c3e
+		summarizeBy: sum
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Date-8ec19b38-6d8d-446d-944c-1d0a47cda1aa = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw", [Query="SELECT *#(lf)from #(lf)work.DIM_DATE_VW#(lf)WHERE#(tab)CAST(date_id AS DATE) <=#(lf)#(tab)#(tab)CASE #(lf)        WHEN DAY(GETDATE()) <= 8 #(lf)#(tab)#(tab)THEN   DATEADD(DAY, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 1, 0)) --Go to previous month last day#(lf)        ELSE DATEADD(DAY, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0))#(lf)#(tab)#(tab)END#(lf)order by Cast(date_id as date) desc"]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"IS_LAST_THREE_YEARS", "BATCH_ID", "IS_ACTIVE_IND", "SCD_END_DT", "SCD_START_DT", "DW_UPDATE_DT", "DW_CREATE_DT"}),
+				    #"Filtered Rows" = Table.SelectRows(#"Removed Columns", each [YEAR] > 2017),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"DATE_ID", type date}}),
+				    #"Duplicated Column" = Table.DuplicateColumn(#"Changed Type", "DATE_ID", "DATE_ID - Copy"),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Duplicated Column",{{"DATE_ID - Copy", type text}}),
+				    #"Removed Columns1" = Table.RemoveColumns(#"Changed Type1",{"DAY", "DAY_NAME", "DAY_OF_WEEK", "DAY_OF_YEAR", "MONTH/YEAR", "QUARTER", "WEEK_OF_MONTH", "WEEK_OF_YEAR", "WEEK/YEAR", "DATE_ID - Copy"})
+				in
+				    #"Removed Columns1"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

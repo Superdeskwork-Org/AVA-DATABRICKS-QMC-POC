@@ -1,0 +1,99 @@
+table RefreshTime
+	lineageTag: e6757d55-b0e6-46cb-b4f7-039e3c9cc10f
+
+	measure refresh_date =
+			
+			Var a = "Data Refreshed As of : "
+			Var b = CALCULATE(max(RefreshTime[Date]))
+			return a&b
+		lineageTag: ad0b753f-aa54-4dd8-8c4f-dbf54a6a5774
+
+	measure 'Refresh Alert' =
+			
+			VAR A = DATEDIFF(MAX('RefreshTime'[Date]), MAX('Refresh Alert'[DATE_REFRESH]), DAY)
+			RETURN
+			IF( A <= 0,
+			    "",
+			    "<!DOCTYPE HTML>
+			    <html>
+			        <head>
+			            <style>
+			                .blink {
+			                    animation: blinker 1.5s linear infinite;
+			                    color: red;
+			                    font-family: 'segoe UI Bold', 'segoe UI';
+			                    font-weight: Bold;
+			                    font-size: 30px;
+			                }
+			                @keyframes blinker {
+			                    50% {
+			                        opacity: 0;
+			                    }
+			                }
+			            </style>
+			        </head>
+			        <body>
+			            <p class=""blink"">⚠️ Refresh Failed on: " & FORMAT(MAX(RefreshTime[Date])+1, "MM/DD/YYYY") & ", GSI team is working on it.</p>
+			        </body>
+			    </html>"
+			)
+		lineageTag: 1e0182e2-c3f7-427e-9bcf-4922a4071765
+
+	column DateTime
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 5827c0ae-7fda-482b-bc98-738d2669c1d8
+		summarizeBy: none
+		sourceColumn: DateTime
+
+		variation Variation
+			isDefault
+			relationship: 3d86596e-fc95-4c03-9ec9-fad296eee13c
+			defaultHierarchy: LocalDateTable_f52e3fe0-b55a-4f16-9f91-f4d99c8495bd.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 685b5158-0952-47f4-9a66-f4d420b86498
+		summarizeBy: none
+		sourceColumn: Date
+
+		variation Variation
+			isDefault
+			relationship: d78a0ad2-eeb9-44e5-b210-0a72aa661238
+			defaultHierarchy: LocalDateTable_c9f8b71b-0a18-425d-a0bf-e35241d26035.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Time
+		dataType: dateTime
+		formatString: Long Time
+		lineageTag: a635b0c9-44e3-478b-9613-c2ac4599d060
+		summarizeBy: none
+		sourceColumn: Time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+	partition RefreshTime = m
+		mode: import
+		source =
+				let
+				    Source = DateTime.LocalNow(),
+				    #"Converted to Table" = #table(1, {{Source}}),
+				    #"Duplicated Column" = Table.DuplicateColumn(#"Converted to Table", "Column1", "Column1 - Copy"),
+				    #"Duplicated Column1" = Table.DuplicateColumn(#"Duplicated Column", "Column1 - Copy", "Column1 - Copy - Copy"),
+				    #"Renamed Columns" = Table.RenameColumns(#"Duplicated Column1",{{"Column1", "DateTime"}, {"Column1 - Copy", "Date"}, {"Column1 - Copy - Copy", "Time"}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns",{{"DateTime", type datetime}, {"Date", type date}, {"Time", type time}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

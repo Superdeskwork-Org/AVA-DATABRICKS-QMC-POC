@@ -1,0 +1,115 @@
+table 'NPS Sys'
+	lineageTag: 304179b4-c654-4f43-a3e7-5c9dc69cdae0
+
+	column NPS_School_Name
+		dataType: string
+		lineageTag: 612909af-96ac-4e92-975e-b7c071e62418
+		summarizeBy: none
+		sourceColumn: NPS_School_Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column FMS_School_Name
+		dataType: string
+		lineageTag: 7f927786-2325-4ee7-9cda-a638e042744a
+		summarizeBy: none
+		sourceColumn: FMS_School_Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column SCHOOL_FMS_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: 62cfb9b3-eefc-47d8-8c4d-aa171c068c83
+		summarizeBy: none
+		sourceColumn: SCHOOL_FMS_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column SCHOOL_CRM_ID
+		dataType: string
+		lineageTag: a2a40f42-7b35-4cb3-b7a2-dcac6cc6d398
+		summarizeBy: none
+		sourceColumn: SCHOOL_CRM_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Responses
+		dataType: int64
+		formatString: 0
+		lineageTag: 3a9f1a2e-37b2-4767-be84-a7e44853b210
+		summarizeBy: sum
+		sourceColumn: Responses
+
+		annotation SummarizationSetBy = Automatic
+
+	column Promoters
+		dataType: int64
+		formatString: 0
+		lineageTag: 52f391c9-cf92-4be0-9fb4-02fd8c60710d
+		summarizeBy: sum
+		sourceColumn: Promoters
+
+		annotation SummarizationSetBy = Automatic
+
+	column Passives
+		dataType: int64
+		formatString: 0
+		lineageTag: 8d951fbe-b3da-4e0c-aa82-2f4ba165fc93
+		summarizeBy: sum
+		sourceColumn: Passives
+
+		annotation SummarizationSetBy = Automatic
+
+	column Detractors
+		dataType: int64
+		formatString: 0
+		lineageTag: 94a7b160-18f7-4129-b8a8-8b504d03adff
+		summarizeBy: sum
+		sourceColumn: Detractors
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latest
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1d32f855-4bed-4078-89ac-4e73235e1e14
+		summarizeBy: none
+		sourceColumn: Latest
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Month
+		dataType: int64
+		formatString: 0
+		lineageTag: 9a07cf60-fa74-4e0c-b68c-e7eb429c68cc
+		summarizeBy: sum
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 814bd239-1893-484c-bc98-d234c47f05bf
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'NPS Sys' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("data-prod-vm1.database.windows.net", "data-prod-sqldw"),
+				    WORK_NPS_Scores = Source{[Schema="WORK",Item="NPS_Scores"]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(WORK_NPS_Scores,{{"Responses", Int64.Type}, {"Promoters", Int64.Type}, {"Passives", Int64.Type}, {"Detractors", Int64.Type}, {"Month", Int64.Type}, {"Year", Int64.Type}, {"Latest", type date}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

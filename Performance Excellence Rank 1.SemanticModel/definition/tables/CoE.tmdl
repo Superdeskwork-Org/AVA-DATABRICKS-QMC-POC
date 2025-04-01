@@ -1,0 +1,34 @@
+table CoE
+	lineageTag: 97a32948-0750-46d9-922d-6133b615b4d8
+
+	column 'School Name'
+		dataType: string
+		lineageTag: d96da4d8-d4d3-4c5f-971c-5aa06c59e2c3
+		summarizeBy: none
+		sourceColumn: School Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'CRM School Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 555a8d5e-d268-4601-9b44-0210f7c0450c
+		summarizeBy: sum
+		sourceColumn: CRM School Number
+
+		annotation SummarizationSetBy = Automatic
+
+	partition CoE = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(Web.Contents("https://goddardsystems.sharepoint.com/sites/DataGovernanceAnalytics/Shared%20Documents/General/Power%20BI/CoE's%20Data/COE_Finalist_Feb2025%202.csv"),[Delimiter=",", Columns=2, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"School Name", type text}, {"CRM School Number", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
