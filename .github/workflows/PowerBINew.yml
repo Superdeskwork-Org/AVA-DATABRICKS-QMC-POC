@@ -1,0 +1,104 @@
+name: Publish PBIX Files to Power BI
+
+on:
+  push:
+    branches:
+      - powerbi-main-1 # Trigger the workflow on pushes to the main branch
+
+jobs:
+  publish-pbix:
+    runs-on: self-hosted # Use Windows as the runner
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Authenticate with Power BI using Service Principal
+      - name: Authenticate with Power BI
+        run: |
+          pbicli login --service-principal `
+            --principal ${{ secrets.CLIENT_ID }} `
+            --secret ${{ secrets.CLIENT_SECRET }} `
+            --tenant ${{ secrets.TENANT_ID }}
+      # Step 3: Find all .pbix files in the repository
+      - name: List all the PBIX Files in the current directory
+        id: find-pbix
+        run: |
+          # Use PowerShell to find all .pbix files recursively
+          $pbixFiles = Get-ChildItem -Path . -Recurse -Filter *.pbix | Select-Object -ExpandProperty FullName
+          echo "Found PBIX files:"
+          $pbixFiles | ForEach-Object { echo $_ }      
+          # Set the output variable for subsequent steps
+          echo "pbixFiles=$($pbixFiles -join ';')" >> $env:GITHUB_OUTPUT
+      # Step 4: Get the list of reports and datasets in the Power BI workspace
+      - name: Get Reports and Datasets in Power BI Workspace
+        id: get-reports-datasets
+        run: |
+          # Define the workspace ID
+          $workspaceId = "7b9f00b7-4beb-40b7-920e-3dee2c03a67d"
+          
+          # Retrieve the list of reports in the workspace
+          $reportsJson = pbicli report list --workspace $workspaceId --output json
+          $reports = ($reportsJson | ConvertFrom-Json) | Select-Object -ExpandProperty name
+          echo "Reports in workspace:"
+          $reports | ForEach-Object { echo $_ }
+          echo "reports=$($reports -join ';')" >> $env:GITHUB_OUTPUT
+          
+          # Retrieve the list of datasets in the workspace
+          $datasetsJson = pbicli dataset list --workspace $workspaceId --output json
+          $datasets = ($datasetsJson | ConvertFrom-Json) | Select-Object -ExpandProperty name
+          echo "Datasets in workspace:"
+          $datasets | ForEach-Object { echo $_ }
+          echo "datasets=$($datasets -join ';')" >> $env:GITHUB_OUTPUT
+      # Step 5: Publish all .pbix files to the workspace
+      - name: Publish PBIX Files to Power BI Workspace
+        run: |
+          # Retrieve the list of PBIX files from the previous step
+          $pbixFiles = "${{ steps.find-pbix.outputs.pbixFiles }}"
+          if (-not $pbixFiles) {
+            echo "No PBIX files found. Exiting."
+            exit 0
+          }
+          # Split the semicolon-separated list into an array
+          $pbixFilesArray = $pbixFiles -split ';'
+          # Define the workspace ID
+          $workspaceId = "7b9f00b7-4beb-40b7-920e-3dee2c03a67d"
+          # Loop through each PBIX file and publish it to the workspace
+          foreach ($file in $pbixFilesArray) {
+            echo "Publishing file: $file"
+            pbicli import pbix -w $workspaceId --file "$file" --conflict CreateOrOverwrite
+          }
+      # Step 6: Delete reports and datasets in the workspace that are no longer in the repository
+      - name: Delete Orphaned Reports and Datasets
+        run: |
+          # Retrieve the list of PBIX files, reports, and datasets from previous steps
+          $pbixFiles = "${{ steps.find-pbix.outputs.pbixFiles }}"
+          $reports = "${{ steps.get-reports-datasets.outputs.reports }}"
+          $datasets = "${{ steps.get-reports-datasets.outputs.datasets }}"
+          
+          # Split the semicolon-separated lists into arrays
+          $pbixFilesArray = $pbixFiles -split ';'
+          $reportsArray = $reports -split ';'
+          $datasetsArray = $datasets -split ';'
+          
+          # Define the workspace ID
+          $workspaceId = "7b9f00b7-4beb-40b7-920e-3dee2c03a67d"
+          
+          # Identify and delete orphaned reports
+          foreach ($report in $reportsArray) {
+            $matchingFile = $pbixFilesArray | Where-Object { $_ -like "*$report*" }
+            if (-not $matchingFile) {
+              echo "Deleting orphaned report: $report"
+              pbicli report delete --workspace $workspaceId --report $report
+            }
+          }
+          
+          # Identify and delete orphaned datasets
+          foreach ($dataset in $datasetsArray) {
+            $matchingFile = $pbixFilesArray | Where-Object { $_ -like "*$dataset*" }
+            if (-not $matchingFile) {
+              echo "Deleting orphaned dataset: $dataset"
+              pbicli dataset delete --workspace $workspaceId --dataset $dataset
+            }
+          }
