@@ -89,7 +89,7 @@ jobs:
             pbicli import pbix -w $workspaceId --file "$file" --conflict CreateOrOverwrite
           }
 
-      # Step 7: Delete orphaned reports and datasets
+      # Step 7: Delete Orphaned Reports and Datasets
       - name: Delete Orphaned Reports and Datasets
         run: |
           # Retrieve the list of PBIX base filenames, reports, and datasets from previous steps
@@ -98,12 +98,18 @@ jobs:
           $datasets = "${{ steps.get-reports-datasets.outputs.datasets }}"
           
           # Split the semicolon-separated lists into arrays
-          $pbixBaseNamesArray = $pbixBaseNames -split ';'
-          $reportsArray = $reports -split ';'
-          $datasetsArray = $datasets -split ';'
+          $pbixBaseNamesArray = ($pbixBaseNames -split ';') | ForEach-Object { $_.Trim().ToLower() }
+          $reportsArray = ($reports -split ';') | ForEach-Object { $_.Trim().ToLower() }
+          $datasetsArray = ($datasets -split ';') | ForEach-Object { $_.Trim().ToLower() }
           
           # Define the workspace ID
           $workspaceId = "7b9f00b7-4beb-40b7-920e-3dee2c03a67d"
+          
+          # Exit early if no PBIX files are found
+          if (-not $pbixBaseNamesArray) {
+            echo "No PBIX files found. Skipping orphan deletion."
+            exit 0
+          }
           
           # Identify and delete orphaned reports
           foreach ($report in $reportsArray) {
