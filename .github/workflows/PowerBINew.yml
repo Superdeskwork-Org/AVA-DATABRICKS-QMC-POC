@@ -3,7 +3,7 @@ name: Publish PBIX Files to Power BI
 on:
   push:
     branches:
-      - powerbi-main-1 # Trigger the workflow on pushes to the main branch
+      - powerbi-main-1-1 # Trigger the workflow on pushes to the main branch
 
 jobs:
   publish-pbix:
