@@ -80,7 +80,7 @@ jobs:
             pbicli import pbix -w $workspaceId --file "$file" --conflict CreateOrOverwrite
           }
 
-      # Step 6: Delete orphaned reports and datasets
+      # Step 6: Delete Orphaned Reports and Datasets
       - name: Delete Orphaned Reports and Datasets
         run: |
           # Retrieve the list of PBIX base filenames, reports, and datasets from previous steps
@@ -96,20 +96,34 @@ jobs:
           # Define the workspace ID
           $workspaceId = "7b9f00b7-4beb-40b7-920e-3dee2c03a67d"
           
-          # Identify and delete orphaned reports
-          foreach ($report in $reportsArray) {
-            $matchingFile = $pbixBaseNamesArray | Where-Object { $_ -eq $report }
-            if (-not $matchingFile) {
-              echo "Deleting orphaned report: $report"
-              pbicli report delete --workspace $workspaceId --report $report
+          # Check if there are any reports to process
+          if ($reportsArray.Count -gt 0) {
+            # Identify and delete orphaned reports
+            foreach ($report in $reportsArray) {
+              if (-not [string]::IsNullOrWhiteSpace($report)) {
+                $matchingFile = $pbixBaseNamesArray | Where-Object { $_ -eq $report }
+                if (-not $matchingFile) {
+                  echo "Deleting orphaned report: $report"
+                  pbicli report delete --workspace $workspaceId --report $report
+                }
+              }
             }
+          } else {
+            echo "No reports found in the workspace. Skipping report deletion."
           }
           
-          # Identify and delete orphaned datasets
-          foreach ($dataset in $datasetsArray) {
-            $matchingFile = $pbixBaseNamesArray | Where-Object { $_ -eq $dataset }
-            if (-not $matchingFile) {
-              echo "Deleting orphaned dataset: $dataset"
-              pbicli dataset delete --workspace $workspaceId --dataset $dataset
+          # Check if there are any datasets to process
+          if ($datasetsArray.Count -gt 0) {
+            # Identify and delete orphaned datasets
+            foreach ($dataset in $datasetsArray) {
+              if (-not [string]::IsNullOrWhiteSpace($dataset)) {
+                $matchingFile = $pbixBaseNamesArray | Where-Object { $_ -eq $dataset }
+                if (-not $matchingFile) {
+                  echo "Deleting orphaned dataset: $dataset"
+                  pbicli dataset delete --workspace $workspaceId --dataset $dataset
+                }
+              }
             }
+          } else {
+            echo "No datasets found in the workspace. Skipping dataset deletion."
           }
