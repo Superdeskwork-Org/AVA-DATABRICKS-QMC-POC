@@ -3,7 +3,7 @@ name: Publish PBIX Files to Power BI
 on:
   push:
     branches:
-      - powerbi-main-1-1 # Trigger the workflow on pushes to the main branch
+      - powerbi-main-1 # Trigger the workflow on pushes to the main branch
 
 jobs:
   publish-pbix:
@@ -21,6 +21,7 @@ jobs:
             --principal ${{ secrets.CLIENT_ID }} `
             --secret ${{ secrets.CLIENT_SECRET }} `
             --tenant ${{ secrets.TENANT_ID }}
+
       # Step 3: Find all .pbix files in the repository
       - name: List all the PBIX Files in the current directory
         id: find-pbix
@@ -31,6 +32,7 @@ jobs:
           $pbixFiles | ForEach-Object { echo $_ }      
           # Set the output variable for subsequent steps
           echo "pbixFiles=$($pbixFiles -join ';')" >> $env:GITHUB_OUTPUT
+
       # Step 4: Get the list of reports and datasets in the Power BI workspace
       - name: Get Reports and Datasets in Power BI Workspace
         id: get-reports-datasets
@@ -51,6 +53,7 @@ jobs:
           echo "Datasets in workspace:"
           $datasets | ForEach-Object { echo $_ }
           echo "datasets=$($datasets -join ';')" >> $env:GITHUB_OUTPUT
+
       # Step 5: Publish all .pbix files to the workspace
       - name: Publish PBIX Files to Power BI Workspace
         run: |
@@ -69,7 +72,8 @@ jobs:
             echo "Publishing file: $file"
             pbicli import pbix -w $workspaceId --file "$file" --conflict CreateOrOverwrite
           }
-      # Step 6: Delete reports and datasets in the workspace that are no longer in the repository
+
+      # Step 6: Delete orphaned reports and datasets
       - name: Delete Orphaned Reports and Datasets
         run: |
           # Retrieve the list of PBIX files, reports, and datasets from previous steps
