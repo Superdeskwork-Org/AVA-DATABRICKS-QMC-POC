@@ -67,7 +67,7 @@ jobs:
           # Loop through each PBIX file and publish it to the workspace
           foreach ($file in $pbixFilesArray) {
             echo "Publishing file: $file"
-            pbicli import pbix -w $workspaceId --file "$file" --conflict Overwrite
+            pbicli import pbix -w $workspaceId --file "$file" --conflict CreateOrOverwrite
           }
       # Step 6: Delete reports and datasets in the workspace that are no longer in the repository
       - name: Delete Orphaned Reports and Datasets
