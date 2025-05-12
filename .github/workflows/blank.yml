@@ -1,0 +1,17 @@
+# .github/workflows/hello-world.yml
+
+name: Hello World Every Minute
+
+on:
+  schedule:
+    # Run every minute using cron syntax
+    - cron: '*/1 * * * *'
+  # Allows manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  hello-world-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Hello World
+        run: echo "Hello World"
