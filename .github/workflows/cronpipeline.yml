@@ -1,0 +1,17 @@
+name: Run Every Minute
+
+on:
+  schedule:
+    - cron: '* * * * *'  # Every minute
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Print time
+        run: |
+          echo "This runs every minute"
+          date
