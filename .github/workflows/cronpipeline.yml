@@ -2,7 +2,7 @@ name: Run Every Minute
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Every minute
+    - cron: '*/5 * * * *'  # Runs every 5 minutes (minimum allowed by GitHub)
 
 jobs:
   build:
@@ -11,7 +11,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print time
+      - name: Create output directory
+        run: mkdir -p ./export-output
+
+      - name: Run Databricks Exporter
         run: |
-          echo "This runs every minute"
-          date
+          echo "Running from $(pwd)"
+          chmod +x /home/azureuser/terraform-provider-databricks_v1.29.0
+          /home/azureuser/terraform-provider-databricks_v1.29.0 exporter \
+            -skip-interactive \
+            -listing=notebooks \
+            -services=notebooks,users,groups,access \
+            -directory=./export-output \
+            -debug
